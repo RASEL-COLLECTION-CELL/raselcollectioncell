@@ -6,28 +6,47 @@
 <meta name="theme-color" content="#050505">
 <meta name="robots" content="noindex, nofollow">
 <title>Rasel Collection Cell</title>
+<link rel="preconnect" href="https://script.google.com" crossorigin>
+<link rel="preconnect" href="https://script.googleusercontent.com" crossorigin>
+<link rel="dns-prefetch" href="https://fonts.googleapis.com">
+<link rel="dns-prefetch" href="https://fonts.gstatic.com">
 <style>
   html, body { margin: 0; padding: 0; height: 100%; background: #050505; overflow: hidden; }
   #muat {
-    position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
-    color: #d9b45a; font: 600 15px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-    letter-spacing: .08em; transition: opacity .4s;
+    position: fixed; inset: 0; z-index: 2; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 18px; background: #050505;
+    color: #d9b45a; font: 600 14px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    letter-spacing: .14em; text-transform: uppercase; transition: opacity .45s ease;
   }
   #muat.selesai { opacity: 0; pointer-events: none; }
-  #app { position: fixed; inset: 0; width: 100%; height: 100%; border: 0; background: #050505; }
+  .cincin {
+    width: 46px; height: 46px; border-radius: 50%;
+    border: 3px solid rgba(217,180,90,.18); border-top-color: #d9b45a;
+    animation: putar .9s linear infinite;
+  }
+  .nama { opacity: .9; animation: denyut 1.6s ease-in-out infinite; }
+  @keyframes putar { to { transform: rotate(360deg); } }
+  @keyframes denyut { 0%,100% { opacity: .45; } 50% { opacity: 1; } }
+  #app { position: fixed; inset: 0; z-index: 1; width: 100%; height: 100%; border: 0; background: #050505; }
 </style>
 </head>
 <body>
-<div id="muat">Memuat…</div>
+<div id="muat" role="status" aria-live="polite">
+  <div class="cincin"></div>
+  <div class="nama">Rasel Collection Cell</div>
+</div>
 <iframe id="app"
   src="https://script.google.com/macros/s/AKfycbxJVi3KPfExlwzTyw31qGIcfyQHW8bckUWycCCnsO0NoBmFxeCUmeQNBUNvvdRCEUmf/exec"
   title="Rasel Collection Cell"
   allow="clipboard-write"
   referrerpolicy="no-referrer"></iframe>
 <script>
-  document.getElementById('app').addEventListener('load', function () {
-    document.getElementById('muat').classList.add('selesai');
-  });
+  (function () {
+    var muat = document.getElementById('muat');
+    var tutup = function () { muat.classList.add('selesai'); };
+    document.getElementById('app').addEventListener('load', function () { setTimeout(tutup, 350); });
+    setTimeout(tutup, 15000); // pengaman: jangan menutupi layar selamanya
+  })();
 </script>
 <noscript>Aktifkan JavaScript untuk membuka halaman ini.</noscript>
 </body>
