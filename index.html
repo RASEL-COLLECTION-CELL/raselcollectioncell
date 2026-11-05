@@ -3,275 +3,175 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#04050c">
+<meta name="theme-color" content="#05060d">
 <meta name="robots" content="noindex, nofollow">
 <title>Rasel Collection Cell</title>
 <link rel="preconnect" href="https://script.google.com" crossorigin>
 <link rel="preconnect" href="https://script.googleusercontent.com" crossorigin>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800&display=swap" onload="this.rel='stylesheet'">
-<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800&display=swap"></noscript>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap">
 <style>
-  :root { --emas: #e9c978; --emas2: #d9a441; }
-  html, body { margin: 0; padding: 0; height: 100%; background: #04050c; overflow: hidden; }
+:root{
+  --bg:#05060d; --bg2:#0b0d1c; --gold:#e9c978; --gold-d:#c8913a; --gold-l:#ffe9a8;
+  --ink:rgba(233,201,120,.92); --mute:rgba(233,201,120,.6);
+  --ease:cubic-bezier(.2,.7,.2,1);
+  --font:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);overflow:hidden}
+#app{position:fixed;inset:0;width:100%;height:100%;border:0;background:#050505;z-index:1}
 
-  /* ================= Layar memuat ================= */
-  #muat {
-    position: fixed; inset: 0; z-index: 2; overflow: hidden; color: var(--emas);
-    font-family: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-    background:
-      radial-gradient(130% 50% at 50% 104%, rgba(235,165,60,.46) 0%, rgba(150,80,25,.2) 40%, transparent 72%),
-      radial-gradient(80% 45% at 85% 8%, rgba(60,70,150,.25), transparent 70%),
-      radial-gradient(70% 40% at 8% 35%, rgba(110,50,110,.16), transparent 72%),
-      linear-gradient(180deg, #01020a 0%, #060818 42%, #0c0a16 72%, #150e0a 100%);
-    transition: opacity .7s ease, transform .9s ease;
-  }
-  #muat.selesai { opacity: 0; transform: scale(1.05); pointer-events: none; }
+/* ===== Layar pembuka ===== */
+#muat{
+  position:fixed;inset:0;z-index:2;overflow:hidden;color:var(--gold);font-family:var(--font);
+  background:
+    radial-gradient(120% 46% at 50% 106%,rgba(235,165,60,.38),rgba(150,80,25,.14) 42%,transparent 72%),
+    radial-gradient(70% 40% at 88% 6%,rgba(70,80,170,.22),transparent 70%),
+    linear-gradient(180deg,#01020a 0%,#060818 45%,#0d0b17 75%,#150e0a 100%);
+  transition:opacity .7s ease,transform .9s ease;
+}
+#muat.selesai{opacity:0;transform:scale(1.04);pointer-events:none}
 
-  /* langit: ribuan bintang digambar sekali di kanvas, lalu diputar sangat pelan */
-  .kanvas {
-    position: absolute; left: 50%; top: 46%; opacity: 0; will-change: transform;
-    transform: translate(-50%, -50%); transition: opacity 1.6s ease;
-    animation: edar 720s linear infinite;
-  }
-  .kanvas.siap { opacity: .95; }
-  @keyframes edar { to { transform: translate(-50%, -50%) rotate(360deg); } }
+.langit{position:absolute;inset:0;width:100%;height:100%;opacity:0;transition:opacity 1.6s ease}
+.langit.siap{opacity:1}
 
-  /* bintang berkilau */
-  .lapis { position: absolute; inset: 0; }
-  .b {
-    position: absolute; border-radius: 50%; background: #fff7dc; opacity: .2;
-    animation: kedip var(--d, 3s) ease-in-out var(--w, 0s) infinite;
-  }
-  .b.emas { background: #ffd98a; box-shadow: 0 0 6px 1px rgba(255,217,138,.7); }
-  .b.k::before, .b.k::after {
-    content: ""; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
-    background: linear-gradient(90deg, transparent, #fff7dc, transparent);
-  }
-  .b.k::before { width: 18px; height: 1px; }
-  .b.k::after  { width: 1px; height: 18px; background: linear-gradient(180deg, transparent, #fff7dc, transparent); }
-  @keyframes kedip { 0%,100% { opacity: .12; transform: scale(.75); } 50% { opacity: 1; transform: scale(1.25); } }
+.bulan{position:absolute;top:calc(8% + env(safe-area-inset-top,0px));right:12%;width:52px;height:52px;border-radius:50%;
+  box-shadow:inset -13px -6px 0 0 #f6e7b4;transform:rotate(-12deg);filter:drop-shadow(0 0 14px rgba(246,231,180,.5))}
+.meteor{position:absolute;top:10%;left:68%;width:110px;height:2px;border-radius:2px;opacity:0;
+  background:linear-gradient(90deg,rgba(255,240,200,0),rgba(255,240,200,.95));
+  animation:jatuh 11s linear 2s infinite}
+.m2{top:22%;left:92%;animation-delay:6s;animation-duration:13s}
+.m3{top:4%;left:38%;animation-delay:9.5s;animation-duration:16s}
+@keyframes jatuh{0%{opacity:0;transform:translate(0,0) rotate(-32deg)}
+  3%{opacity:1}10%,100%{opacity:0;transform:translate(-260px,164px) rotate(-32deg)}}
+.vinyet{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 50% 45%,transparent 50%,rgba(0,0,0,.6) 100%)}
 
-  /* debu emas yang melayang naik (selaras dengan aplikasi) */
-  .debu {
-    position: absolute; bottom: var(--y, 8%); left: var(--x, 50%); width: var(--u, 3px); height: var(--u, 3px);
-    border-radius: 50%; opacity: 0; background: radial-gradient(circle, #ffe9a8 0%, #e4b34f 60%, transparent 100%);
-    box-shadow: 0 0 8px 1px rgba(255,214,120,.55); animation: naikdebu var(--d, 12s) ease-in-out var(--w, 0s) infinite;
-  }
-  @keyframes naikdebu {
-    0%   { opacity: 0; transform: translate3d(0,0,0); }
-    15%  { opacity: .9; }
-    85%  { opacity: .45; }
-    100% { opacity: 0; transform: translate3d(var(--dx, 12px), -48vh, 0); }
-  }
+.panggung{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:calc(24px + env(safe-area-inset-top,0px)) 24px calc(120px + env(safe-area-inset-bottom,0px))}
+.u{animation:naik .9s var(--ease) both;animation-delay:var(--t,0s)}
+@keyframes naik{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 
-  /* bintang jatuh */
-  .meteor {
-    position: absolute; width: 120px; height: 2px; opacity: 0; transform: rotate(-32deg);
-    background: linear-gradient(90deg, rgba(255,240,200,0), rgba(255,240,200,.95));
-    border-radius: 2px; filter: drop-shadow(0 0 4px rgba(255,230,170,.9));
-    animation: jatuh 9s linear infinite;
-  }
-  .m1 { top: 9%;  left: 66%; animation-delay: 1.6s; }
-  .m2 { top: 20%; left: 92%; animation-delay: 6.4s; animation-duration: 12s; }
-  @keyframes jatuh {
-    0%   { opacity: 0; transform: translate(0,0) rotate(-32deg); }
-    3%   { opacity: 1; }
-    11%  { opacity: 0; transform: translate(-280px,176px) rotate(-32deg); }
-    100% { opacity: 0; transform: translate(-280px,176px) rotate(-32deg); }
-  }
+/* lambang: satu-satunya titik fokus */
+.lambang{position:relative;width:128px;height:128px;margin-bottom:28px}
+.lambang::before{content:"";position:absolute;inset:-54px;border-radius:50%;
+  background:radial-gradient(circle,rgba(233,180,80,.32),rgba(233,180,80,.08) 46%,transparent 70%);
+  animation:napas 3.6s ease-in-out infinite}
+.lambang svg{position:relative;display:block;width:100%;height:100%;filter:drop-shadow(0 10px 22px rgba(0,0,0,.6))}
+.cincin{transform-origin:60px 60px;animation:putar 1.6s linear infinite}
+@keyframes putar{to{transform:rotate(360deg)}}
+@keyframes napas{0%,100%{transform:scale(.92);opacity:.65}50%{transform:scale(1.06);opacity:1}}
+.goyang{animation:apung 3.8s ease-in-out infinite}
+@keyframes apung{0%,100%{transform:translateY(0)}50%{transform:translateY(-1.6px)}}
+.kedip{transform-box:fill-box;transform-origin:center;animation:mata 5s infinite}
+@keyframes mata{0%,92%,100%{transform:scaleY(1)}95%{transform:scaleY(.1)}}
 
-  /* bulan */
-  .halo {
-    position: absolute; top: calc(9% - 90px); right: calc(13% - 90px); width: 238px; height: 238px; border-radius: 50%;
-    background: radial-gradient(circle, rgba(246,231,180,.20) 0%, rgba(246,231,180,.06) 40%, transparent 70%);
-  }
-  .bulan {
-    position: absolute; top: 9%; right: 13%; width: 58px; height: 58px; border-radius: 50%;
-    box-shadow: inset -15px -7px 0 0 #f6e7b4; transform: rotate(-12deg);
-    filter: drop-shadow(0 0 12px rgba(246,231,180,.6));
-  }
+.merek{margin:0;font-weight:800;font-size:clamp(34px,11vw,52px);letter-spacing:.2em;text-indent:.2em;line-height:1.05;
+  background:linear-gradient(100deg,#b98a2e 0%,#ffe9a8 35%,#d9a441 55%,#ffe9a8 78%,#b98a2e 100%);
+  background-size:220% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;
+  filter:drop-shadow(0 2px 14px rgba(217,164,65,.3))}
+.merek.u{animation:naik .9s var(--ease) both,kilau 4s linear 1s infinite}
+@keyframes kilau{to{background-position:-220% 0}}
+.sub{margin-top:8px;font-weight:600;font-size:clamp(13px,3.8vw,16px);letter-spacing:.34em;text-indent:.34em;color:var(--ink)}
+.garis{display:flex;align-items:center;gap:10px;margin:22px 0 14px}
+.garis span{width:56px;height:1px;background:linear-gradient(90deg,transparent,rgba(233,201,120,.75))}
+.garis span:last-child{transform:scaleX(-1)}
+.garis i{width:6px;height:6px;transform:rotate(45deg);background:var(--gold-d);box-shadow:0 0 8px rgba(217,164,65,.8)}
+.tagline{font-size:14px;font-weight:400;color:var(--mute)}
 
-  /* tekstur halus & vinyet */
-  .butir {
-    position: absolute; inset: 0; pointer-events: none; opacity: .08; mix-blend-mode: overlay;
-    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
-  }
-  .vinyet { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse at 50% 45%, transparent 52%, rgba(0,0,0,.6) 100%); }
+.status{margin-top:34px;min-height:20px;font-size:14px;font-weight:600;color:var(--ink)}
+#teks{transition:opacity .25s ease}
+.batang{margin:14px auto 0;width:min(220px,58vw);height:3px;border-radius:3px;background:rgba(233,201,120,.14);overflow:hidden}
+.batang b{display:block;height:100%;width:8%;border-radius:3px;
+  background:linear-gradient(90deg,#c8913a,#ffe29a);transition:width 1.2s var(--ease)}
 
-  /* konten tengah */
-  .isi {
-    position: absolute; left: 0; right: 0; top: 18%; display: flex; flex-direction: column;
-    align-items: center; text-align: center; padding: 0 24px;
-  }
-  .u { animation: naik .95s cubic-bezier(.2,.7,.2,1) both; animation-delay: var(--t, 0s); }
-  @keyframes naik { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+.bantuan{margin-top:20px;display:flex;gap:10px;flex-wrap:wrap;justify-content:center;
+  opacity:0;transform:translateY(6px);transition:opacity .5s ease,transform .5s ease;pointer-events:none}
+.bantuan.tampil{opacity:1;transform:none;pointer-events:auto}
+.tombol{font:600 13px/1 var(--font);color:var(--gold);text-decoration:none;cursor:pointer;
+  padding:12px 18px;min-height:44px;display:inline-flex;align-items:center;border-radius:999px;
+  background:rgba(233,201,120,.08);border:1px solid rgba(233,201,120,.45);transition:background .2s}
+.tombol:hover{background:rgba(233,201,120,.18)}
+.tombol:focus-visible{outline:2px solid var(--gold-l);outline-offset:3px}
 
-  .lambang { position: relative; width: 132px; height: 132px; margin-bottom: 26px; }
-  .lambang::before {
-    content: ""; position: absolute; inset: -50px; border-radius: 50%;
-    background: radial-gradient(circle, rgba(233,180,80,.34) 0%, rgba(233,180,80,.09) 45%, transparent 70%);
-    animation: napas 3.4s ease-in-out infinite;
-  }
-  .lambang svg { position: relative; display: block; width: 100%; height: 100%; filter: drop-shadow(0 8px 20px rgba(0,0,0,.6)); }
-  .putar { transform-origin: 60px 60px; animation: edarcincin 1.5s linear infinite; }
-  @keyframes edarcincin { to { transform: rotate(360deg); } }
-  @keyframes napas { 0%,100% { transform: scale(.9); opacity: .65; } 50% { transform: scale(1.08); opacity: 1; } }
-  .goyang { animation: mengambang 3.6s ease-in-out infinite; }
-  @keyframes mengambang { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-1.6px); } }
-  .kedip { transform-box: fill-box; transform-origin: center; animation: kedipmata 5s infinite; }
-  @keyframes kedipmata { 0%,92%,100% { transform: scaleY(1); } 95% { transform: scaleY(.1); } }
+.bukit{position:absolute;left:0;right:0;bottom:0;width:100%;height:26%;display:block}
+.aman{position:absolute;left:0;right:0;bottom:calc(16px + env(safe-area-inset-bottom,0px));display:flex;
+  align-items:center;justify-content:center;gap:7px;font-size:12px;color:var(--mute)}
+.aman svg{width:14px;height:14px}
 
-  .merek {
-    margin: 0; font-weight: 800; font-size: clamp(30px, 10.5vw, 46px); letter-spacing: .34em; text-indent: .34em; line-height: 1.1;
-    background: linear-gradient(100deg, #b98a2e 0%, #ffe9a8 35%, #d9a441 55%, #ffe9a8 78%, #b98a2e 100%);
-    background-size: 220% 100%; -webkit-background-clip: text; background-clip: text;
-    -webkit-text-fill-color: transparent; color: transparent;
-    filter: drop-shadow(0 2px 14px rgba(217,164,65,.35));
-  }
-  .merek.u { animation: naik .95s cubic-bezier(.2,.7,.2,1) both, kilau 3.4s linear 1s infinite; }
-  @keyframes kilau { to { background-position: -220% 0; } }
-  .sub { margin-top: 10px; font-weight: 700; font-size: clamp(11px, 3.5vw, 14px); letter-spacing: .52em; text-indent: .52em; color: rgba(233,201,120,.92); }
-  .hias { display: flex; align-items: center; gap: 10px; margin: 20px 0 14px; }
-  .hias span { width: 54px; height: 1px; background: linear-gradient(90deg, transparent, rgba(233,201,120,.8)); }
-  .hias span:last-child { transform: scaleX(-1); }
-  .hias i { width: 6px; height: 6px; transform: rotate(45deg); background: var(--emas2); box-shadow: 0 0 8px rgba(217,164,65,.8); }
-  .tagline { font-size: 12px; font-weight: 500; letter-spacing: .24em; text-indent: .24em; text-transform: uppercase; color: rgba(233,201,120,.62); }
-  .status { margin-top: 30px; font-size: 12.5px; font-weight: 500; letter-spacing: .2em; text-indent: .2em; text-transform: uppercase; color: rgba(233,201,120,.85); }
-  #teks { transition: opacity .25s ease; }
-  .status i { font-style: normal; opacity: 0; animation: titik 1.4s steps(1) infinite; }
-  .status i:nth-of-type(2) { animation-delay: .25s; }
-  .status i:nth-of-type(3) { animation-delay: .5s; }
-  @keyframes titik { 0% { opacity: 0; } 25%,100% { opacity: 1; } }
-  .batang { margin-top: 14px; width: min(210px, 56vw); height: 3px; border-radius: 3px; background: rgba(233,201,120,.14); overflow: hidden; }
-  .batang::after {
-    content: ""; display: block; width: 42%; height: 100%; border-radius: 3px;
-    background: linear-gradient(90deg, transparent, #ffe29a, transparent); animation: geser 1.5s ease-in-out infinite;
-  }
-  @keyframes geser { 0% { transform: translateX(-110%); } 100% { transform: translateX(260%); } }
-
-  /* tombol muat ulang bila koneksi lambat */
-  .muatulang {
-    margin-top: 20px; padding: 10px 18px; border-radius: 999px; cursor: pointer;
-    font: 600 12px/1 "Plus Jakarta Sans", system-ui, sans-serif; letter-spacing: .08em; color: var(--emas);
-    background: rgba(233,201,120,.08); border: 1px solid rgba(233,201,120,.45);
-    opacity: 0; transform: translateY(6px); transition: opacity .5s ease, transform .5s ease; pointer-events: none;
-  }
-  .muatulang.tampil { opacity: 1; transform: none; pointer-events: auto; }
-
-  /* bukit berlapis */
-  .bukit { position: absolute; left: 0; right: 0; bottom: 0; width: 100%; height: 27%; display: block; }
-  .aman {
-    position: absolute; left: 0; right: 0; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); display: flex;
-    align-items: center; justify-content: center; gap: 7px; font-size: 11px; font-weight: 500; letter-spacing: .12em;
-    color: rgba(233,201,120,.6);
-  }
-  .aman svg { width: 13px; height: 13px; }
-
-  /* ================= Halaman utama ================= */
-  #app { position: fixed; inset: 0; z-index: 1; width: 100%; height: 100%; border: 0; background: #050505; }
-
-  @media (prefers-reduced-motion: reduce) {
-    .kanvas, .b, .debu, .meteor, .merek, .status i, .batang::after, .kedip, .goyang, .lambang::before, .putar, .u { animation: none !important; }
-    .b { opacity: .7; } .status i { opacity: 1; }
-  }
+@media (max-height:560px){.lambang{width:92px;height:92px;margin-bottom:16px}.status{margin-top:18px}}
+@media (prefers-reduced-motion:reduce){
+  .langit,.meteor,.merek,.cincin,.goyang,.kedip,.lambang::before,.u{animation:none!important}
+  .batang b{transition:none}
+}
 </style>
 </head>
 <body>
 
 <div id="muat" role="status" aria-live="polite">
-  <canvas class="kanvas" id="kanvas"></canvas>
-  <div class="lapis" id="lapis"></div>
-  <div class="meteor m1"></div><div class="meteor m2"></div>
-  <div class="halo"></div><div class="bulan"></div>
-  <div class="butir"></div><div class="vinyet"></div>
+  <canvas class="langit" id="langit" aria-hidden="true"></canvas>
+  <div class="meteor" aria-hidden="true"></div><div class="meteor m2" aria-hidden="true"></div><div class="meteor m3" aria-hidden="true"></div>
+  <div class="bulan" aria-hidden="true"></div>
+  <div class="vinyet"></div>
 
-  <div class="isi">
-    <!-- Lambang: maskot kucing dalam lencana emas -->
+  <div class="panggung">
     <div class="lambang u" style="--t:.05s">
-      <svg viewBox="0 0 120 120" aria-hidden="true">
+      <svg viewBox="0 0 120 120" role="img" aria-label="Logo Rasel Collection Cell">
         <defs>
-          <linearGradient id="cg" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stop-color="#ffe9a8"/><stop offset="1" stop-color="#c88a2a"/>
-          </linearGradient>
-          <radialGradient id="lat" cx="50%" cy="34%" r="75%">
-            <stop offset="0" stop-color="#5b3f1b"/><stop offset=".55" stop-color="#2b1c0c"/><stop offset="1" stop-color="#0e0905"/>
-          </radialGradient>
-          <linearGradient id="sorot" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stop-color="#ffe08a" stop-opacity=".5"/><stop offset="1" stop-color="#ffe08a" stop-opacity="0"/>
-          </linearGradient>
-          <radialGradient id="kg" cx="35%" cy="30%" r="80%">
-            <stop offset="0" stop-color="#fff0b8"/><stop offset=".5" stop-color="#e9b94f"/><stop offset="1" stop-color="#a06f1f"/>
-          </radialGradient>
+          <linearGradient id="cg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffe9a8"/><stop offset="1" stop-color="#c88a2a"/></linearGradient>
+          <radialGradient id="lat" cx="50%" cy="34%" r="75%"><stop offset="0" stop-color="#5b3f1b"/><stop offset=".55" stop-color="#2b1c0c"/><stop offset="1" stop-color="#0e0905"/></radialGradient>
+          <linearGradient id="sorot" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe08a" stop-opacity=".5"/><stop offset="1" stop-color="#ffe08a" stop-opacity="0"/></linearGradient>
+          <radialGradient id="kg" cx="35%" cy="30%" r="80%"><stop offset="0" stop-color="#fff0b8"/><stop offset=".5" stop-color="#e9b94f"/><stop offset="1" stop-color="#a06f1f"/></radialGradient>
           <clipPath id="kc"><circle cx="60" cy="60" r="43"/></clipPath>
         </defs>
-
         <circle cx="60" cy="60" r="55" fill="none" stroke="rgba(233,201,120,.16)" stroke-width="1.5"/>
-        <circle class="putar" cx="60" cy="60" r="55" fill="none" stroke="url(#cg)" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="86 260"/>
+        <circle class="cincin" cx="60" cy="60" r="55" fill="none" stroke="url(#cg)" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="86 260"/>
         <circle cx="60" cy="60" r="46" fill="url(#cg)"/>
         <circle cx="60" cy="60" r="43" fill="url(#lat)"/>
-
         <g clip-path="url(#kc)">
           <path d="M50 14 L70 14 L96 104 L24 104 Z" fill="url(#sorot)"/>
-          <g class="goyang">
-            <g transform="translate(20 17) scale(.8)">
-              <!-- ekor -->
-              <path d="M70 86 Q95 86 91 60" fill="none" stroke="#f0a24c" stroke-width="8.5" stroke-linecap="round"/>
-              <path d="M91 60 Q90 56 87.5 54" fill="none" stroke="#e08a2c" stroke-width="3" stroke-linecap="round"/>
-              <!-- badan & perut -->
-              <ellipse cx="50" cy="84" rx="26" ry="20" fill="#f3a752"/>
-              <ellipse cx="50" cy="91" rx="13" ry="12" fill="#fdf0e0"/>
-              <!-- telinga -->
-              <path d="M22 42 L24 12 Q25 9 28 11 L46 23 Z" fill="#f3a752"/>
-              <path d="M78 42 L76 12 Q75 9 72 11 L54 23 Z" fill="#f3a752"/>
-              <path d="M28 34 L29 19.5 Q29.5 18 31 19 L40 25.5 Z" fill="#f6b0b6"/>
-              <path d="M72 34 L71 19.5 Q70.5 18 69 19 L60 25.5 Z" fill="#f6b0b6"/>
-              <!-- kepala -->
-              <ellipse cx="50" cy="47" rx="30" ry="26" fill="#f3a752"/>
-              <path d="M50 22.5 L50 30 M43.5 24.5 L45.5 30.5 M56.5 24.5 L54.5 30.5" stroke="#d9791f" stroke-width="2.4" stroke-linecap="round" fill="none"/>
-              <!-- kumis -->
-              <path d="M21 50 L7.5 47.5 M21 55 L7.5 56.5 M79 50 L92.5 47.5 M79 55 L92.5 56.5" stroke="#d9791f" stroke-width="1.5" stroke-linecap="round" fill="none"/>
-              <!-- moncong & pipi -->
-              <ellipse cx="50" cy="57.5" rx="14.5" ry="10.5" fill="#fff1e2"/>
-              <ellipse cx="27.5" cy="57" rx="5.2" ry="3.6" fill="#f58f8f" opacity=".6"/>
-              <ellipse cx="72.5" cy="57" rx="5.2" ry="3.6" fill="#f58f8f" opacity=".6"/>
-              <!-- mata -->
-              <g class="kedip">
-                <ellipse cx="39.5" cy="47" rx="7.6" ry="8.2" fill="#fff"/>
-                <circle cx="38.6" cy="48" r="4.3" fill="#15110e"/>
-                <circle cx="37.2" cy="46" r="1.4" fill="#fff"/>
-              </g>
-              <g class="kedip">
-                <ellipse cx="60.5" cy="47" rx="7.6" ry="8.2" fill="#fff"/>
-                <circle cx="59.6" cy="48" r="4.3" fill="#15110e"/>
-                <circle cx="58.2" cy="46" r="1.4" fill="#fff"/>
-              </g>
-              <!-- hidung & mulut -->
-              <path d="M47 54.6 L53 54.6 Q53.4 55.2 50 58.6 Q46.6 55.2 47 54.6 Z" fill="#e8788f"/>
-              <path d="M50 58.6 L50 61.2 M44 61.2 Q47 65.6 50 61.2 Q53 65.6 56 61.2" stroke="#7b3c12" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-              <!-- kalung & medali -->
-              <path d="M31 70 Q50 82 69 70 L67.5 77.5 Q50 89 32.5 77.5 Z" fill="#dc4862"/>
-              <circle cx="50" cy="83" r="8" fill="url(#kg)" stroke="#b9801c" stroke-width="1.5"/>
-              <text x="50" y="86.4" text-anchor="middle" font-size="9.5" font-weight="800" fill="#6b4106" font-family="Plus Jakarta Sans, system-ui, sans-serif">R</text>
-              <!-- kaki depan -->
-              <ellipse cx="34.5" cy="95" rx="8.5" ry="6" fill="#f3a752"/>
-              <ellipse cx="65.5" cy="95" rx="8.5" ry="6" fill="#f3a752"/>
-              <path d="M31 93 L31 97.4 M34.5 92.4 L34.5 97.4 M38 93 L38 97.4 M62 93 L62 97.4 M65.5 92.4 L65.5 97.4 M69 93 L69 97.4" stroke="#d9791f" stroke-width="1.2" stroke-linecap="round"/>
-            </g>
-          </g>
+          <g class="goyang"><g transform="translate(20 17) scale(.8)">
+            <path d="M70 86 Q95 86 91 60" fill="none" stroke="#f0a24c" stroke-width="8.5" stroke-linecap="round"/>
+            <path d="M91 60 Q90 56 87.5 54" fill="none" stroke="#e08a2c" stroke-width="3" stroke-linecap="round"/>
+            <ellipse cx="50" cy="84" rx="26" ry="20" fill="#f3a752"/>
+            <ellipse cx="50" cy="91" rx="13" ry="12" fill="#fdf0e0"/>
+            <path d="M22 42 L24 12 Q25 9 28 11 L46 23 Z" fill="#f3a752"/>
+            <path d="M78 42 L76 12 Q75 9 72 11 L54 23 Z" fill="#f3a752"/>
+            <path d="M28 34 L29 19.5 Q29.5 18 31 19 L40 25.5 Z" fill="#f6b0b6"/>
+            <path d="M72 34 L71 19.5 Q70.5 18 69 19 L60 25.5 Z" fill="#f6b0b6"/>
+            <ellipse cx="50" cy="47" rx="30" ry="26" fill="#f3a752"/>
+            <path d="M50 22.5 L50 30 M43.5 24.5 L45.5 30.5 M56.5 24.5 L54.5 30.5" stroke="#d9791f" stroke-width="2.4" stroke-linecap="round" fill="none"/>
+            <path d="M21 50 L7.5 47.5 M21 55 L7.5 56.5 M79 50 L92.5 47.5 M79 55 L92.5 56.5" stroke="#d9791f" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+            <ellipse cx="50" cy="57.5" rx="14.5" ry="10.5" fill="#fff1e2"/>
+            <ellipse cx="27.5" cy="57" rx="5.2" ry="3.6" fill="#f58f8f" opacity=".6"/>
+            <ellipse cx="72.5" cy="57" rx="5.2" ry="3.6" fill="#f58f8f" opacity=".6"/>
+            <g class="kedip"><ellipse cx="39.5" cy="47" rx="7.6" ry="8.2" fill="#fff"/><circle cx="38.6" cy="48" r="4.3" fill="#15110e"/><circle cx="37.2" cy="46" r="1.4" fill="#fff"/></g>
+            <g class="kedip"><ellipse cx="60.5" cy="47" rx="7.6" ry="8.2" fill="#fff"/><circle cx="59.6" cy="48" r="4.3" fill="#15110e"/><circle cx="58.2" cy="46" r="1.4" fill="#fff"/></g>
+            <path d="M47 54.6 L53 54.6 Q53.4 55.2 50 58.6 Q46.6 55.2 47 54.6 Z" fill="#e8788f"/>
+            <path d="M50 58.6 L50 61.2 M44 61.2 Q47 65.6 50 61.2 Q53 65.6 56 61.2" stroke="#7b3c12" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+            <path d="M31 70 Q50 82 69 70 L67.5 77.5 Q50 89 32.5 77.5 Z" fill="#dc4862"/>
+            <circle cx="50" cy="83" r="8" fill="url(#kg)" stroke="#b9801c" stroke-width="1.5"/>
+            <text x="50" y="86.4" text-anchor="middle" font-size="9.5" font-weight="800" fill="#6b4106" font-family="Plus Jakarta Sans,system-ui,sans-serif">R</text>
+            <ellipse cx="34.5" cy="95" rx="8.5" ry="6" fill="#f3a752"/><ellipse cx="65.5" cy="95" rx="8.5" ry="6" fill="#f3a752"/>
+            <path d="M31 93 L31 97.4 M34.5 92.4 L34.5 97.4 M38 93 L38 97.4 M62 93 L62 97.4 M65.5 92.4 L65.5 97.4 M69 93 L69 97.4" stroke="#d9791f" stroke-width="1.2" stroke-linecap="round"/>
+          </g></g>
         </g>
         <circle cx="60" cy="60" r="43" fill="none" stroke="rgba(70,40,5,.7)" stroke-width="1.2"/>
       </svg>
     </div>
 
     <h1 class="merek u" style="--t:.2s">RASEL</h1>
-    <div class="sub u" style="--t:.3s">COLLECTION CELL</div>
-    <div class="hias u" style="--t:.4s"><span></span><i></i><span></span></div>
-    <div class="tagline u" style="--t:.5s">Cek Transaksi &amp; Hadiah</div>
-    <div class="status u" style="--t:.65s"><span id="teks">Menyiapkan halaman</span><i>.</i><i>.</i><i>.</i></div>
-    <div class="batang u" style="--t:.75s"></div>
-    <button class="muatulang" id="muatulang" type="button">Koneksi lambat? Ketuk untuk muat ulang</button>
+    <div class="sub u" style="--t:.3s">Collection Cell</div>
+    <div class="garis u" style="--t:.4s" aria-hidden="true"><span></span><i></i><span></span></div>
+    <div class="tagline u" style="--t:.5s">Cek transaksi dan hadiah Anda</div>
+
+    <div class="status u" style="--t:.65s"><span id="teks">Menyiapkan halaman…</span></div>
+    <div class="batang u" style="--t:.75s" aria-hidden="true"><b id="isi"></b></div>
+
+    <div class="bantuan" id="bantuan">
+      <button class="tombol" id="ulang" type="button">Muat ulang</button>
+      <a class="tombol" id="tabbaru" href="#" target="_blank" rel="noopener">Buka di tab baru</a>
+    </div>
   </div>
 
   <svg class="bukit" viewBox="0 0 400 140" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
@@ -279,108 +179,128 @@
     <path d="M0 140 L0 96 Q80 74 170 90 T330 84 Q370 80 400 88 L400 140 Z" fill="#0d0907"/>
     <path d="M0 140 L0 114 Q70 100 150 110 T300 106 Q360 102 400 108 L400 140 Z" fill="#050403"/>
   </svg>
-
   <div class="aman">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="2.5"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
-    <span>Koneksi aman &amp; terenkripsi</span>
+    <span>Koneksi aman dan terenkripsi</span>
   </div>
 </div>
 
-<iframe id="app"
-  src="https://script.google.com/macros/s/AKfycbxJVi3KPfExlwzTyw31qGIcfyQHW8bckUWycCCnsO0NoBmFxeCUmeQNBUNvvdRCEUmf/exec"
-  title="Rasel Collection Cell"
-  allow="clipboard-write"
-  referrerpolicy="no-referrer"></iframe>
+<iframe id="app" title="Rasel Collection Cell" allow="clipboard-write" referrerpolicy="no-referrer"
+  src="https://script.google.com/macros/s/AKfycbxJVi3KPfExlwzTyw31qGIcfyQHW8bckUWycCCnsO0NoBmFxeCUmeQNBUNvvdRCEUmf/exec"></iframe>
+<noscript><p style="position:fixed;inset:0;z-index:3;margin:0;padding:40px;background:#05060d;color:#e9c978;font-family:sans-serif">Aktifkan JavaScript untuk membuka halaman ini.</p></noscript>
 
 <script>
-  (function () {
-    var muat = document.getElementById('muat');
+(function(){
+  var $=function(i){return document.getElementById(i)};
+  var muat=$('muat'),frame=$('app'),teks=$('teks'),isi=$('isi'),bantuan=$('bantuan'),done=false;
+  $('tabbaru').href=frame.getAttribute('src');
+  $('ulang').addEventListener('click',function(){location.reload()});
 
-    // 1) Langit berbintang: digambar sekali di kanvas (hemat baterai), diputar pelan lewat CSS
-    try {
-      var kanvas = document.getElementById('kanvas'), W = Math.max(window.innerWidth, window.innerHeight);
-      var s = Math.min(1800, Math.round(W * 1.55));
-      kanvas.width = kanvas.height = s;
-      kanvas.style.width = kanvas.style.height = s + 'px';
-      var c = kanvas.getContext('2d'), sudut = -0.62, TAU = Math.PI * 2;
-
-      c.save(); c.translate(s / 2, s / 2); c.rotate(sudut); c.scale(1, .2);   // kabut galaksi tipis
-      var g = c.createRadialGradient(0, 0, 0, 0, 0, s * .62);
-      g.addColorStop(0, 'rgba(190,175,235,.10)'); g.addColorStop(.5, 'rgba(150,140,210,.045)'); g.addColorStop(1, 'rgba(150,140,210,0)');
-      c.fillStyle = g; c.beginPath(); c.arc(0, 0, s * .62, 0, TAU); c.fill(); c.restore();
-
-      var warna = ['255,247,220', '255,247,220', '200,215,255', '255,225,170'];
-      var n = Math.min(1500, Math.round(s * s / 2600)), x, y, i;
-      for (i = 0; i < n; i++) {
-        if (i % 10 < 4) {
-          var t = (Math.random() - .5) * s * 1.2, d = (Math.random() + Math.random() + Math.random() - 1.5) * s * .16;
-          x = s / 2 + t * Math.cos(sudut) - d * Math.sin(sudut);
-          y = s / 2 + t * Math.sin(sudut) + d * Math.cos(sudut);
-        } else { x = Math.random() * s; y = Math.random() * s; }
-        var r = Math.pow(Math.random(), 3) * 1.3 + .35, a = .25 + Math.random() * .75;
-        c.fillStyle = 'rgba(' + warna[(Math.random() * warna.length) | 0] + ',' + a.toFixed(2) + ')';
-        c.beginPath(); c.arc(x, y, r, 0, TAU); c.fill();
+  /* 1) Galaksi spiral berputar + ribuan bintang bergerak (kanvas hidup) */
+  var stopLangit=function(){};
+  try{
+    var cv=$('langit'),cx=cv.getContext('2d'),dpr=Math.min(window.devicePixelRatio||1,2),T=Math.PI*2;
+    var reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var RGB=['255,247,220','255,247,220','200,215,255','255,214,150','255,190,140'];
+    var w,h,gx,gy,R,G=[],B=[],kilau=[],tilt=.42,rot=-.5,cR=Math.cos(rot),sR=Math.sin(rot),raf=0,t0=performance.now(),mati=false;
+    function ukur(){
+      w=innerWidth;h=innerHeight;cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr);
+      cx.setTransform(dpr,0,0,dpr,0,0);gx=w*.5;gy=h*.42;R=Math.max(w,h)*.66;
+    }
+    function buat(){
+      var luas=w*h,ng=Math.min(4200,Math.round(luas/90)),nb=Math.min(800,Math.round(luas/700)),i,k,r,sc;
+      G=[];B=[];kilau=[];
+      for(i=0;i<ng;i++){
+        r=R*Math.pow(Math.random(),1.35);
+        sc=(Math.random()+Math.random()+Math.random()-1.5)*(.55-.3*r/R);
+        G.push({
+          a:(i%3)*(T/3)+r/R*4.4+sc, r:r+(Math.random()-.5)*R*.04,
+          w:.06/(.4+r/R), s:Math.random()<.08?1.9:Math.random()*1.1+.55,
+          o:.3+Math.random()*.7, f:.6+Math.random()*2.4, p:Math.random()*T,
+          c:(r<R*.18&&Math.random()<.6)?3+((Math.random()*2)|0):(Math.random()*3)|0
+        });
       }
-      for (i = 0; i < 26; i++) {
-        x = Math.random() * s; y = Math.random() * s;
-        var rr = 5 + Math.random() * 5, gg = c.createRadialGradient(x, y, 0, x, y, rr);
-        gg.addColorStop(0, 'rgba(255,247,220,.55)'); gg.addColorStop(1, 'rgba(255,247,220,0)');
-        c.fillStyle = gg; c.beginPath(); c.arc(x, y, rr, 0, TAU); c.fill();
-        c.fillStyle = 'rgba(255,255,255,.95)'; c.beginPath(); c.arc(x, y, 1.3, 0, TAU); c.fill();
+      for(i=0;i<nb;i++){
+        B.push({x:Math.random()*w,y:Math.random()*h,vx:(Math.random()-.3)*5,vy:(Math.random()-.5)*2,
+          s:Math.random()<.1?1.8:Math.random()*1.1+.5,o:.25+Math.random()*.7,f:.8+Math.random()*3,p:Math.random()*T,
+          c:(Math.random()*3)|0});
       }
-      requestAnimationFrame(function () { kanvas.classList.add('siap'); });
-    } catch (e) {}
+      for(i=0;i<14;i++)kilau.push({x:Math.random()*w,y:Math.random()*h*.8,f:.5+Math.random()*1.2,p:Math.random()*T});
+    }
+    function gambar(t){
+      cx.clearRect(0,0,w,h);
+      /* inti galaksi bercahaya */
+      cx.save();cx.translate(gx,gy);cx.rotate(rot);cx.scale(1,tilt);
+      var kp=.9+.1*Math.sin(t*.8),g=cx.createRadialGradient(0,0,0,0,0,R*.55);
+      g.addColorStop(0,'rgba(255,226,160,'+(.42*kp).toFixed(3)+')');
+      g.addColorStop(.18,'rgba(235,170,95,'+(.16*kp).toFixed(3)+')');
+      g.addColorStop(.55,'rgba(150,140,220,.05)');g.addColorStop(1,'rgba(120,110,200,0)');
+      cx.fillStyle=g;cx.beginPath();cx.arc(0,0,R*.55,0,T);cx.fill();cx.restore();
 
-    // 2) Bintang berkedip + debu emas melayang
-    try {
-      var lapis = document.getElementById('lapis'), frag = document.createDocumentFragment(), k, el;
-      for (k = 0; k < 44; k++) {
-        el = document.createElement('div');
-        var kilau = k < 7, ukuran = kilau ? 2.6 : (Math.random() > .7 ? 2 : 1.4);
-        el.className = 'b' + (kilau ? ' k' : '') + (!kilau && Math.random() > .8 ? ' emas' : '');
-        el.style.width = el.style.height = ukuran + 'px';
-        el.style.left = (Math.random() * 100).toFixed(2) + '%';
-        el.style.top = (Math.random() * 66).toFixed(2) + '%';
-        el.style.setProperty('--d', (2.2 + Math.random() * 4).toFixed(2) + 's');
-        el.style.setProperty('--w', (-Math.random() * 6).toFixed(2) + 's');
-        frag.appendChild(el);
+      var c,i,n,o,x,y,ang,px,py;
+      for(c=0;c<RGB.length;c++){
+        cx.fillStyle='rgb('+RGB[c]+')';
+        for(i=0,n=G.length;i<n;i++){
+          o=G[i];if(o.c!==c)continue;
+          ang=o.a+o.w*t;px=Math.cos(ang)*o.r;py=Math.sin(ang)*o.r*tilt;
+          x=gx+px*cR-py*sR;y=gy+px*sR+py*cR;
+          cx.globalAlpha=o.o*(.55+.45*Math.sin(t*o.f+o.p));
+          cx.fillRect(x,y,o.s,o.s);
+        }
+        if(c<3){
+          for(i=0,n=B.length;i<n;i++){
+            o=B[i];if(o.c!==c)continue;
+            x=((o.x+o.vx*t)%w+w)%w;y=((o.y+o.vy*t)%h+h)%h;
+            cx.globalAlpha=o.o*(.5+.5*Math.sin(t*o.f+o.p));
+            cx.fillRect(x,y,o.s,o.s);
+          }
+        }
       }
-      for (k = 0; k < 16; k++) {
-        el = document.createElement('div');
-        el.className = 'debu';
-        el.style.setProperty('--x', (Math.random() * 100).toFixed(1) + '%');
-        el.style.setProperty('--y', (4 + Math.random() * 30).toFixed(1) + '%');
-        el.style.setProperty('--u', (2 + Math.random() * 2.6).toFixed(1) + 'px');
-        el.style.setProperty('--dx', ((Math.random() - .5) * 40).toFixed(0) + 'px');
-        el.style.setProperty('--d', (9 + Math.random() * 8).toFixed(1) + 's');
-        el.style.setProperty('--w', (-Math.random() * 12).toFixed(1) + 's');
-        frag.appendChild(el);
+      /* bintang besar berkilau */
+      cx.globalAlpha=1;
+      for(i=0;i<kilau.length;i++){
+        o=kilau[i];var q=.5+.5*Math.sin(t*o.f+o.p),L=5+9*q;
+        cx.fillStyle='rgba(255,247,220,'+(.35+.6*q).toFixed(2)+')';
+        cx.fillRect(o.x-L,o.y-.5,L*2,1);cx.fillRect(o.x-.5,o.y-L,1,L*2);
+        cx.beginPath();cx.arc(o.x,o.y,1.4,0,T);cx.fill();
       }
-      lapis.appendChild(frag);
-    } catch (e) {}
+      cx.globalAlpha=1;
+    }
+    function putaran(now){
+      if(mati)return;
+      gambar((now-t0)/1000);raf=requestAnimationFrame(putaran);
+    }
+    ukur();buat();gambar(0);
+    if(!reduce)raf=requestAnimationFrame(putaran);
+    var rs;addEventListener('resize',function(){clearTimeout(rs);rs=setTimeout(function(){ukur();buat();gambar((performance.now()-t0)/1000)},200)});
+    stopLangit=function(){mati=true;cancelAnimationFrame(raf)};
+    requestAnimationFrame(function(){cv.classList.add('siap')});
+  }catch(e){}
 
-    // 3) Pesan status bertahap + tombol muat ulang bila koneksi lambat
-    var teks = document.getElementById('teks'), tombol = document.getElementById('muatulang');
-    var ganti = function (kata) {
-      teks.style.opacity = 0;
-      setTimeout(function () { teks.textContent = kata; teks.style.opacity = 1; }, 250);
-    };
-    var pesan = [[3500, 'Menghubungkan ke server'], [8000, 'Hampir selesai']];
-    pesan.forEach(function (p) { setTimeout(function () { if (!sudah) ganti(p[1]); }, p[0]); });
-    setTimeout(function () { if (!sudah) tombol.classList.add('tampil'); }, 12000);
-    tombol.addEventListener('click', function () { location.reload(); });
+  /* 2) Status bertahap + bilah kemajuan */
+  var tahap=[[0,'Menyiapkan halaman…',8],[3500,'Menghubungkan ke server…',42],[8000,'Hampir selesai…',78]];
+  function ganti(t,p){
+    teks.style.opacity=0;
+    setTimeout(function(){teks.textContent=t;teks.style.opacity=1},220);
+    isi.style.width=p+'%';
+  }
+  tahap.forEach(function(t){setTimeout(function(){if(!done)ganti(t[1],t[2])},t[0])});
+  setTimeout(function(){
+    if(!done){ganti('Koneksi lambat. Coba muat ulang atau buka di tab baru.',85);bantuan.classList.add('tampil')}
+  },12000);
 
-    // 4) Tutup layar memuat saat halaman siap (animasi dihapus agar hemat baterai)
-    var sudah = false;
-    var tutup = function () {
-      if (sudah) return; sudah = true;
+  /* 3) Tutup layar pembuka saat aplikasi siap */
+  function tutup(){
+    if(done)return;done=true;
+    isi.style.width='100%';
+    setTimeout(function(){
       muat.classList.add('selesai');
-      setTimeout(function () { muat.style.display = 'none'; }, 950);
-    };
-    document.getElementById('app').addEventListener('load', function () { setTimeout(tutup, 450); });
-    setTimeout(tutup, 45000); // pengaman terakhir
-  })();
+      setTimeout(function(){muat.style.display='none';stopLangit()},950);
+    },350);
+  }
+  frame.addEventListener('load',function(){setTimeout(tutup,300)});
+  setTimeout(tutup,45000);
+})();
 </script>
-<noscript>Aktifkan JavaScript untuk membuka halaman ini.</noscript>
 </body>
 </html>
