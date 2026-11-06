@@ -185,7 +185,7 @@ html,body{margin:0;height:100%;background:var(--bg);overflow:hidden}
   </div>
 </div>
 
-<iframe id="app" title="Rasel Collection Cell" allow="clipboard-write" referrerpolicy="no-referrer"
+<iframe id="app" title="Rasel Collection Cell" allow="clipboard-write; autoplay" referrerpolicy="no-referrer"
   src="https://script.google.com/macros/s/AKfycbxJVi3KPfExlwzTyw31qGIcfyQHW8bckUWycCCnsO0NoBmFxeCUmeQNBUNvvdRCEUmf/exec"></iframe>
 <noscript><p style="position:fixed;inset:0;z-index:3;margin:0;padding:40px;background:#05060d;color:#e9c978;font-family:sans-serif">Aktifkan JavaScript untuk membuka halaman ini.</p></noscript>
 
@@ -314,7 +314,7 @@ if(!fr||!window.addEventListener)return;
 function kirim(src,o){try{src.postMessage(o,'*')}catch(e){}}
 function henti(){try{if(cur){cur.pause();cur=null}}catch(e){}}
 /* muat awal ringan agar tidak telat saat dipakai */
-setTimeout(function(){try{Object.keys(OK).forEach(function(f){var a=new Audio();a.preload='auto';a.src=f})}catch(e){}},4000);
+setTimeout(function(){try{Object.keys(OK).forEach(function(f){var a=new Audio();a.preload='auto';a.src=f;(window.rkPre=window.rkPre||[]).push(a)})}catch(e){}},4000);
 window.addEventListener('message',function(e){
  try{
   if(!/^https:\/\/([a-z0-9-]+\.)*(googleusercontent|google)\.com$/.test(String(e.origin||'')))return;
