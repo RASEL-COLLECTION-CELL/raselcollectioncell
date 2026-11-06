@@ -303,7 +303,7 @@ html,body{margin:0;height:100%;background:var(--bg);overflow:hidden}
 })();
 </script>
 
-<!-- ===== RKW v2: pemutar mp3 di halaman GitHub (TAMBAHAN; GANTI blok RKW v1 dengan blok ini, tempel TEPAT SEBELUM </body> di index.html GITHUB) =====
+<!-- ===== RKW v3: pemutar mp3 di halaman GitHub (TAMBAHAN; GANTI blok RKW v1 dengan blok ini, tempel TEPAT SEBELUM </body> di index.html GITHUB) =====
      File mp3 harus satu folder dengan index.html GitHub. ===== -->
 <script>
 (function(){try{
@@ -317,7 +317,7 @@ function henti(){try{if(cur){cur.pause();cur=null}}catch(e){}}
 setTimeout(function(){try{Object.keys(OK).forEach(function(f){var a=new Audio();a.preload='auto';a.src=f})}catch(e){}},4000);
 window.addEventListener('message',function(e){
  try{
-  if(!fr.contentWindow||e.source!==fr.contentWindow)return;
+  if(!/^https:\/\/([a-z0-9-]+\.)*(googleusercontent|google)\.com$/.test(String(e.origin||'')))return;
   var d=e.data;if(!d||d.rk!==1)return;
   if(d.t==='stop'){henti();return}
   if(d.t!=='play'||!OK[d.file])return;
