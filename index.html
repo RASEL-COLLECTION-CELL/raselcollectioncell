@@ -302,34 +302,93 @@ html,body{margin:0;height:100%;background:var(--bg);overflow:hidden}
   setTimeout(tutup,45000);
 })();
 </script>
-<!-- ===== RKW v2: pemutar mp3 di halaman GitHub (TAMBAHAN; GANTI blok RKW v1 dengan blok ini, tempel TEPAT SEBELUM </body> di index.html GITHUB) =====
-     File mp3 harus satu folder dengan index.html GitHub. ===== -->
+<!-- ===== RKV v3: sambutan suara bertahap (TAMBAHAN; GANTI blok RKV v2 yang lama dengan blok ini, tempel TEPAT SEBELUM </body> di index.html APPS SCRIPT) =====
+     Urutan suara: [ting] -> mp3 "Selamat pagi/siang/sore/malam" -> nama pelanggan (suara HP, bahasa Indonesia) -> mp3 "Selamat datang kembali..."
+     Jika mp3 belum ada / gagal, bagian itu otomatis dibacakan suara HP. Tidak mengubah kode lama / Code.gs / EventPatch.gs. ===== -->
 <script>
 (function(){try{
-var fr=document.getElementById('app'),
-    OK={'rk-100.mp3':1,'rk-pagi.mp3':1,'rk-siang.mp3':1,'rk-sore.mp3':1,'rk-malam.mp3':1,'rk-sambutan.mp3':1},
-    cur=null;
-if(!fr||!window.addEventListener)return;
-function kirim(src,o){try{src.postMessage(o,'*')}catch(e){}}
-function henti(){try{if(cur){cur.pause();cur=null}}catch(e){}}
-/* muat awal ringan agar tidak telat saat dipakai */
-setTimeout(function(){try{Object.keys(OK).forEach(function(f){var a=new Audio();a.preload='auto';a.src=f})}catch(e){}},4000);
+var D=document,CFG={vol:.85,rate:.95,
+ ting:'rk-100.mp3',
+ salam:{pagi:'rk-pagi.mp3',siang:'rk-siang.mp3',sore:'rk-sore.mp3',malam:'rk-malam.mp3'},
+ tutup:'rk-sambutan.mp3'};
+var w=D.getElementById('welcome');if(!w||!window.MutationObserver)return;
+window.RKVOICE=1;
+var SS=window.speechSynthesis,voice=null,shown=false,lastRun=0,seq=0,pend={},tok=0;
+function pickVoice(){try{
+ if(!SS)return;var v=SS.getVoices()||[],i;voice=null;
+ for(i=0;i<v.length;i++){if(/^id([-_]|$)/i.test(v[i].lang)){voice=v[i];break}}
+}catch(e){}}
+pickVoice();try{if(SS&&SS.addEventListener)SS.addEventListener('voiceschanged',pickVoice)}catch(e){}
+function muted(){try{return !!(window.RKSND&&RKSND.mute())}catch(e){return false}}
+
+/* mp3 diputar oleh halaman induk (GitHub) lewat postMessage */
 window.addEventListener('message',function(e){
  try{
-  if(!fr.contentWindow||e.source!==fr.contentWindow)return;
-  var d=e.data;if(!d||d.rk!==1)return;
-  if(d.t==='stop'){henti();return}
-  if(d.t!=='play'||!OK[d.file])return;
-  henti();
-  var id=d.id,src=e.source,a=new Audio(d.file),fin=false;
-  cur=a;a.volume=Math.max(0,Math.min(1,+d.vol||.8));
-  function res(ok){if(fin)return;fin=true;if(cur===a)cur=null;kirim(src,{rk:1,t:'res',id:id,ok:ok})}
-  a.addEventListener('playing',function(){kirim(src,{rk:1,t:'ack',id:id})});
-  a.addEventListener('ended',function(){res(true)});
-  a.addEventListener('error',function(){res(false)});
-  var p=a.play();if(p&&p.catch)p.catch(function(){res(false)});
+  var d=e.data;if(!d||d.rk!==1||e.source!==window.parent)return;
+  var p=pend[d.id];if(!p)return;
+  if(d.t==='ack'){p.ack=1;clearTimeout(p.t1);p.t2=setTimeout(function(){fin(d.id,false)},20000)}
+  else if(d.t==='res')fin(d.id,!!d.ok);
  }catch(x){}
 });
+function fin(id,ok){var p=pend[id];if(!p)return;delete pend[id];clearTimeout(p.t1);clearTimeout(p.t2);p.cb(ok)}
+function mp3(file,cb){
+ var id=++seq;
+ if(window.parent===window){cb(false);return}
+ pend[id]={cb:cb,ack:0};
+ pend[id].t1=setTimeout(function(){fin(id,false)},2500);
+ try{window.parent.postMessage({rk:1,t:'play',id:id,file:file,vol:CFG.vol},'*')}catch(e){fin(id,false)}
+}
+function stopAll(){
+ tok++;
+ try{if(SS)SS.cancel()}catch(e){}
+ try{if(window.parent!==window)window.parent.postMessage({rk:1,t:'stop'},'*')}catch(e){}
+ Object.keys(pend).forEach(function(k){var p=pend[k];if(p){delete pend[k];clearTimeout(p.t1);clearTimeout(p.t2)}});
+}
+function say(text,cb){
+ var done=false,t;
+ function fn(){if(done)return;done=true;clearTimeout(t);cb()}
+ try{
+  if(!SS||typeof SpeechSynthesisUtterance==='undefined'||!text){fn();return}
+  var u=new SpeechSynthesisUtterance(text);
+  u.lang='id-ID';if(voice)u.voice=voice;u.rate=CFG.rate;u.pitch=1.05;u.volume=1;
+  u.onend=fn;u.onerror=fn;
+  t=setTimeout(fn,12000);
+  SS.speak(u);
+ }catch(e){fn()}
+}
+function txt(id){return ((D.getElementById(id)||{}).textContent||'').replace(/\s+/g,' ').trim()}
+function waktu(){
+ var g=txt('wGreet').toLowerCase(),m=/pagi|siang|sore|malam/.exec(g);
+ if(m)return m[0];
+ var h=new Date().getHours();return h<4?'malam':h<11?'pagi':h<15?'siang':h<18?'sore':'malam';
+}
+function jalan(){
+ if(muted())return;
+ var n=Date.now();if(n-lastRun<3000)return;lastRun=n;
+ var my=++tok,wk=waktu(),nama=txt('wName'),
+     toko=(((D.querySelector('.brand')||{}).textContent)||'Rasel Collection Cell').trim();
+ toko=toko.charAt(0)+toko.slice(1).toLowerCase();
+ try{if(SS)SS.cancel()}catch(e){}
+ var S=[
+  function(nx){mp3(CFG.ting,function(ok){if(!ok){try{if(window.RKSND)RKSND.play('ok')}catch(e){}}setTimeout(nx,ok?100:250)})},
+  function(nx){mp3(CFG.salam[wk],function(ok){if(ok)nx();else say('Selamat '+wk,nx)})},
+  function(nx){if(nama)say(nama,nx);else nx()},
+  function(nx){mp3(CFG.tutup,function(ok){if(ok)nx();else say('Selamat datang kembali di '+toko+'. Semoga hari Anda menyenangkan.',nx)})}
+ ],i=0;
+ (function next(){
+  if(my!==tok||muted())return;
+  if(i>=S.length)return;
+  S[i++](function(){setTimeout(next,60)});
+ })();
+}
+new MutationObserver(function(){
+ var on=w.classList.contains('on')&&!w.classList.contains('out');
+ if(on&&!shown)try{jalan()}catch(e){}
+ shown=on;
+}).observe(w,{attributes:true,attributeFilter:['class']});
+D.addEventListener('click',function(e){
+ try{if(e.target&&e.target.closest&&e.target.closest('#rksBtn,#bOut'))stopAll()}catch(x){}
+},true);
 }catch(e){}})();
 </script>
 
