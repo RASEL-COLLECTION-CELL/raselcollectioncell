@@ -302,14 +302,18 @@ html,body{margin:0;height:100%;background:var(--bg);overflow:hidden}
   setTimeout(tutup,45000);
 })();
 </script>
-<!-- ===== RKW v1: pemutar mp3 di halaman GitHub (TAMBAHAN; tempel TEPAT SEBELUM </body> di index.html GitHub) =====
-     Menerima perintah dari app (iframe) lalu memutar rk-100.mp3 / rk-sambutan.mp3 dari folder yang sama. ===== -->
+<!-- ===== RKW v2: pemutar mp3 di halaman GitHub (TAMBAHAN; GANTI blok RKW v1 dengan blok ini, tempel TEPAT SEBELUM </body> di index.html GITHUB) =====
+     File mp3 harus satu folder dengan index.html GitHub. ===== -->
 <script>
 (function(){try{
-var fr=document.getElementById('app'),OK={'rk-100.mp3':1,'rk-sambutan.mp3':1},cur=null,curId=0;
+var fr=document.getElementById('app'),
+    OK={'rk-100.mp3':1,'rk-pagi.mp3':1,'rk-siang.mp3':1,'rk-sore.mp3':1,'rk-malam.mp3':1,'rk-sambutan.mp3':1},
+    cur=null;
 if(!fr||!window.addEventListener)return;
 function kirim(src,o){try{src.postMessage(o,'*')}catch(e){}}
 function henti(){try{if(cur){cur.pause();cur=null}}catch(e){}}
+/* muat awal ringan agar tidak telat saat dipakai */
+setTimeout(function(){try{Object.keys(OK).forEach(function(f){var a=new Audio();a.preload='auto';a.src=f})}catch(e){}},4000);
 window.addEventListener('message',function(e){
  try{
   if(!fr.contentWindow||e.source!==fr.contentWindow)return;
@@ -318,7 +322,7 @@ window.addEventListener('message',function(e){
   if(d.t!=='play'||!OK[d.file])return;
   henti();
   var id=d.id,src=e.source,a=new Audio(d.file),fin=false;
-  cur=a;curId=id;a.volume=Math.max(0,Math.min(1,+d.vol||.8));
+  cur=a;a.volume=Math.max(0,Math.min(1,+d.vol||.8));
   function res(ok){if(fin)return;fin=true;if(cur===a)cur=null;kirim(src,{rk:1,t:'res',id:id,ok:ok})}
   a.addEventListener('playing',function(){kirim(src,{rk:1,t:'ack',id:id})});
   a.addEventListener('ended',function(){res(true)});
@@ -328,6 +332,6 @@ window.addEventListener('message',function(e){
 });
 }catch(e){}})();
 </script>
-  
+
 </body>
 </html>
