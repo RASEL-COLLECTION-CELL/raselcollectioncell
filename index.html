@@ -302,36 +302,92 @@ html,body{margin:0;height:100%;background:var(--bg);overflow:hidden}
   setTimeout(tutup,45000);
 })();
 </script>
-<!-- ===== RKW v4: pemutar mp3 + izin rk-nama-*.mp3 ===== -->
+<!-- ===== RKW v5: pemutar mp3 mulus (Web Audio, tanpa jeda) ===== -->
 <script>
 (function(){try{
 var fr=document.getElementById('app'),
-    OK={'rk-100.mp3':1,'rk-pagi.mp3':1,'rk-siang.mp3':1,'rk-sore.mp3':1,'rk-malam.mp3':1,'rk-sambutan.mp3':1},
-    cur=null;
+ OK={'rk-100.mp3':1,'rk-pagi.mp3':1,'rk-siang.mp3':1,'rk-sore.mp3':1,'rk-malam.mp3':1,'rk-sambutan.mp3':1},
+ AC=window.AudioContext||window.webkitAudioContext,
+ LEAD=.35,GAP=.03,TH=.012,
+ ctx=null,cache={},nextFree=0,srcs=[],timers=[],gen=0,lama=null;
 if(!fr||!window.addEventListener)return;
 function boleh(f){f=String(f||'');return !!OK[f]||/^rk-nama-[a-z0-9-]{1,60}\.mp3$/.test(f)}
-function kirim(src,o){try{src.postMessage(o,'*')}catch(e){}}
-function henti(){try{if(cur){cur.pause();cur=null}}catch(e){}}
-setTimeout(function(){try{Object.keys(OK).forEach(function(f){var a=new Audio();a.preload='auto';a.src=f;(window.rkPre=window.rkPre||[]).push(a)})}catch(e){}},4000);
+function kirim(s,o){try{s.postMessage(o,'*')}catch(e){}}
+function getCtx(){if(!ctx&&AC){try{ctx=new AC()}catch(e){ctx=null}}return ctx}
+
+/* potong hening awal & akhir */
+function trim(b){
+ var sr=b.sampleRate,n=b.length,ch=b.numberOfChannels,a=n,z=0,c,d,i;
+ for(c=0;c<ch;c++){
+  d=b.getChannelData(c);
+  for(i=0;i<n;i++){if(Math.abs(d[i])>TH){if(i<a)a=i;break}}
+  for(i=n-1;i>=0;i--){if(Math.abs(d[i])>TH){if(i>z)z=i;break}}
+ }
+ if(a>=z){a=0;z=n-1}
+ a=Math.max(0,a-Math.round(.01*sr));z=Math.min(n,z+Math.round(.05*sr));
+ return {b:b,off:a/sr,dur:(z-a)/sr};
+}
+function muat(f){
+ if(cache[f])return cache[f];
+ var c=getCtx();if(!c)return Promise.reject(new Error('noctx'));
+ var p=fetch(f).then(function(r){if(!r.ok)throw new Error('http');return r.arrayBuffer()})
+  .then(function(ab){return new Promise(function(ok,no){var q=c.decodeAudioData(ab,ok,no);if(q&&q.catch)q.catch(no)})})
+  .then(trim);
+ cache[f]=p;p.catch(function(){delete cache[f]});return p;
+}
+function henti(){
+ gen++;timers.forEach(clearTimeout);timers=[];
+ srcs.forEach(function(s){try{s.stop()}catch(e){}});srcs=[];nextFree=0;
+ try{if(lama){lama.pause();lama=null}}catch(e){}
+}
+/* cadangan jika Web Audio tidak ada */
+function putarLama(d,src){
+ var a=new Audio(d.file),fin=false,id=d.id;lama=a;a.volume=Math.max(0,Math.min(1,+d.vol||.8));
+ function res(ok){if(fin)return;fin=true;if(lama===a)lama=null;kirim(src,{rk:1,t:'res',id:id,ok:ok})}
+ a.addEventListener('playing',function(){kirim(src,{rk:1,t:'ack',id:id})});
+ a.addEventListener('ended',function(){res(true)});a.addEventListener('error',function(){res(false)});
+ var p=a.play();if(p&&p.catch)p.catch(function(){res(false)});
+}
+function putar(d,src){
+ var my=gen,id=d.id,vol=Math.max(0,Math.min(1,+d.vol||.8));
+ function gagal(){
+  if(my!==gen)return;var c=ctx,w=c?Math.max(0,(nextFree-c.currentTime)*1000):0;
+  timers.push(setTimeout(function(){if(my===gen)kirim(src,{rk:1,t:'res',id:id,ok:false})},w));
+ }
+ if(!getCtx()){putarLama(d,src);return}
+ muat(d.file).then(function(t){
+  if(my!==gen)return;
+  var c=ctx,r=c.state==='running'?Promise.resolve():Promise.race([c.resume(),new Promise(function(x){setTimeout(x,400)})]);
+  return r.then(function(){
+   if(my!==gen)return;
+   if(c.state!=='running'){gagal();return}
+   var st=Math.max(c.currentTime+.03,nextFree+GAP),end=st+t.dur,s=c.createBufferSource(),g=c.createGain();
+   s.buffer=t.b;
+   g.gain.setValueAtTime(0,st);g.gain.linearRampToValueAtTime(vol,st+.006);
+   g.gain.setValueAtTime(vol,Math.max(st+.006,end-.03));g.gain.linearRampToValueAtTime(0,end);
+   s.connect(g);g.connect(c.destination);s.start(st,t.off,t.dur);
+   nextFree=end;srcs.push(s);
+   s.onended=function(){var i=srcs.indexOf(s);if(i>-1)srcs.splice(i,1)};
+   kirim(src,{rk:1,t:'ack',id:id});
+   /* "selesai" dikirim lebih awal agar rekaman berikutnya sudah antre */
+   timers.push(setTimeout(function(){if(my===gen)kirim(src,{rk:1,t:'res',id:id,ok:true})},Math.max(0,(end-LEAD-c.currentTime)*1000)));
+  });
+ }).catch(gagal);
+}
 window.addEventListener('message',function(e){
  try{
   if(!/^https:\/\/([a-z0-9-]+\.)*(googleusercontent|google)\.com$/.test(String(e.origin||'')))return;
   var d=e.data;if(!d||d.rk!==1)return;
   if(d.t==='stop'){henti();return}
+  if(d.t==='pre'){(d.files||[]).forEach(function(f){if(boleh(f))muat(f).catch(function(){})});return}
   if(d.t!=='play')return;
   if(!boleh(d.file)){kirim(e.source,{rk:1,t:'res',id:d.id,ok:false});return}
-  henti();
-  var id=d.id,src=e.source,a=new Audio(d.file),fin=false;
-  cur=a;a.volume=Math.max(0,Math.min(1,+d.vol||.8));
-  function res(ok){if(fin)return;fin=true;if(cur===a)cur=null;kirim(src,{rk:1,t:'res',id:id,ok:ok})}
-  a.addEventListener('playing',function(){kirim(src,{rk:1,t:'ack',id:id})});
-  a.addEventListener('ended',function(){res(true)});
-  a.addEventListener('error',function(){res(false)});
-  var p=a.play();if(p&&p.catch)p.catch(function(){res(false)});
+  henti();putar(d,e.source);
  }catch(x){}
 });
+/* muat semua rekaman tetap sejak halaman dibuka */
+setTimeout(function(){Object.keys(OK).forEach(function(f){muat(f).catch(function(){})})},300);
 }catch(e){}})();
 </script>
-
 </body>
 </html>
