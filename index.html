@@ -351,7 +351,7 @@ function putarLama(d,src){
  var p=a.play();if(p&&p.catch)p.catch(function(){res(false)});
 }
 function putar(d,src){
- var my=gen,id=d.id,vol=Math.max(0,Math.min(1,+d.vol||.8));
+ var my=gen,id=d.id,vol=Math.max(0,Math.min(1,+d.vol||.8)),gp=(typeof d.gap==='number'&&d.gap>=0&&d.gap<=1)?d.gap:GAP;
  function gagal(){
   if(my!==gen)return;var c=ctx,w=c?Math.max(0,(nextFree-c.currentTime)*1000):0;
   timers.push(setTimeout(function(){if(my===gen)kirim(src,{rk:1,t:'res',id:id,ok:false})},w));
@@ -363,7 +363,7 @@ function putar(d,src){
   return r.then(function(){
    if(my!==gen)return;
    if(c.state!=='running'){gagal();return}
-   var st=Math.max(c.currentTime+.03,nextFree+GAP),end=st+t.dur,s=c.createBufferSource(),g=c.createGain();
+   var st=Math.max(c.currentTime+.03,nextFree+gp),end=st+t.dur,s=c.createBufferSource(),g=c.createGain();
    s.buffer=t.b;
    g.gain.setValueAtTime(0,st);g.gain.linearRampToValueAtTime(vol,st+.006);
    g.gain.setValueAtTime(vol,Math.max(st+.006,end-.03));g.gain.linearRampToValueAtTime(0,end);
