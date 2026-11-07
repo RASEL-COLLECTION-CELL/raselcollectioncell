@@ -310,7 +310,7 @@ var fr=document.getElementById('app'),
  'rk-hadiah.mp3':1,'rk-klaim.mp3':1,'rk-event.mp3':1,'rk-event-klaim.mp3':1,'rk-login-gagal.mp3':1,'rk-login-kunci.mp3':1,'rk-login-blokir.mp3':1,'rk-koneksi.mp3':1},
  AC=window.AudioContext||window.webkitAudioContext,
  LEAD=.35,GAP=.55,TH=.012,
- ctx=null,cache={},nextFree=0,srcs=[],timers=[],gen=0,lama=null;
+ ctx=null,cache={},nextFree=0,srcs=[],timers=[],gen=0,lama=null,lanjut=false;
 if(!fr||!window.addEventListener)return;
 function boleh(f){f=String(f||'');return !!OK[f]||/^rk-nama-[a-z0-9-]{1,60}\.mp3$/.test(f)}
 function kirim(s,o){try{s.postMessage(o,'*')}catch(e){}}
@@ -337,7 +337,7 @@ function muat(f){
  cache[f]=p;p.catch(function(){delete cache[f]});return p;
 }
 function henti(){
- gen++;timers.forEach(clearTimeout);timers=[];
+ gen++;lanjut=false;timers.forEach(clearTimeout);timers=[];
  srcs.forEach(function(s){try{s.stop()}catch(e){}});srcs=[];nextFree=0;
  try{if(lama){lama.pause();lama=null}}catch(e){}
 }
@@ -371,7 +371,7 @@ function putar(d,src){
    s.onended=function(){var i=srcs.indexOf(s);if(i>-1)srcs.splice(i,1)};
    kirim(src,{rk:1,t:'ack',id:id});
    /* "selesai" dikirim lebih awal agar rekaman berikutnya sudah antre */
-   timers.push(setTimeout(function(){if(my===gen)kirim(src,{rk:1,t:'res',id:id,ok:true})},Math.max(0,(end-LEAD-c.currentTime)*1000)));
+   timers.push(setTimeout(function(){if(my===gen){lanjut=true;kirim(src,{rk:1,t:'res',id:id,ok:true})}},Math.max(0,(end-LEAD-c.currentTime)*1000)));
   });
  }).catch(gagal);
 }
@@ -383,7 +383,8 @@ window.addEventListener('message',function(e){
   if(d.t==='pre'){(d.files||[]).forEach(function(f){if(boleh(f))muat(f).catch(function(){})});return}
   if(d.t!=='play')return;
   if(!boleh(d.file)){kirim(e.source,{rk:1,t:'res',id:d.id,ok:false});return}
-  henti();putar(d,e.source);
+  if(!lanjut)henti();   /* rekaman lanjutan dari urutan yang sama: JANGAN potong rekaman sebelumnya, cukup antre */
+  lanjut=false;putar(d,e.source);
  }catch(x){}
 });
 /* muat semua rekaman tetap sejak halaman dibuka */
