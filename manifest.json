@@ -4,10 +4,10 @@
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#0b1b3b",
-  "theme_color": "#0b1b3b",
+  "background_color": "#05060d",
+  "theme_color": "#05060d",
   "icons": [
-    {"src": "rasel_collection_cell_icon_512_custom.png", "sizes": "192x192", "type": "image/png"},
-    {"src": "rasel_collection_cell_icon_512_custom.png", "sizes": "512x512", "type": "image/png"}
+    {"src": "logo-emas.png", "sizes": "192x192", "type": "image/png"},
+    {"src": "logo-emas.png", "sizes": "512x512", "type": "image/png"}
   ]
 }
