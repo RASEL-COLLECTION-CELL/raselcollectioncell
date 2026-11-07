@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#05060d">
+<link rel="manifest" href="manifest.json">
 <meta name="robots" content="noindex, nofollow">
 <title>Rasel Collection Cell</title>
 <link rel="preconnect" href="https://script.google.com" crossorigin>
@@ -391,5 +392,6 @@ window.addEventListener('message',function(e){
 setTimeout(function(){Object.keys(OK).forEach(function(f){muat(f).catch(function(){})})},300);
 }catch(e){}})();
 </script>
+<script>if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js');}</script>
 </body>
 </html>
