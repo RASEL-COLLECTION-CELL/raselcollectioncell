@@ -308,7 +308,7 @@ html,body{margin:0;height:100%;background:var(--bg);overflow:hidden}
 (function(){try{
 var fr=document.getElementById('app'),
  OK={'rk-100.mp3':1,'rk-pagi.mp3':1,'rk-siang.mp3':1,'rk-sore.mp3':1,'rk-malam.mp3':1,'rk-sambutan.mp3':1,
- 'rk-hadiah.mp3':1,'rk-klaim.mp3':1,'rk-event.mp3':1,'rk-event-klaim.mp3':1,'rk-login-gagal.mp3':1,'rk-login-kunci.mp3':1,'rk-login-blokir.mp3':1,'rk-koneksi.mp3':1},
+ 'rk-hadiah.mp3':1,'rk-klaim.mp3':1,'rk-event.mp3':1,'rk-event-klaim.mp3':1,'rk-login-gagal.mp3':1,'rk-login-kunci.mp3':1,'rk-login-blokir.mp3':1,'rk-koneksi.mp3':1,'rk-pasang.mp3':1,'rk-pasang-ok.mp3':1},
  AC=window.AudioContext||window.webkitAudioContext,
  LEAD=.35,GAP=.55,TH=.012,
  ctx=null,cache={},nextFree=0,srcs=[],timers=[],gen=0,lama=null,lanjut=false;
@@ -393,5 +393,41 @@ setTimeout(function(){Object.keys(OK).forEach(function(f){muat(f).catch(function
 }catch(e){}})();
 </script>
 <script>if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js');}</script>
+<!-- RKI v2: pasang aplikasi (ADD-ONLY) -->
+<script>
+(function(){try{
+var dp=null,done=false,phase='idle',icon='',subs=[],tm=0;
+var ORG=/^https:\/\/([a-z0-9-]+\.)*(googleusercontent|google)\.com$/;
+var sa=false;try{sa=matchMedia('(display-mode: standalone)').matches||navigator.standalone===true}catch(e){}
+var ios=/iphone|ipad|ipod/i.test(navigator.userAgent)&&!window.MSStream;
+try{
+ var mu=document.querySelector('link[rel=manifest]'),mh=mu?mu.href:new URL('manifest.json',location.href).href;
+ fetch(mh).then(function(r){return r.json()}).then(function(m){
+  var a=(m&&m.icons)||[],b=null,i;
+  for(i=0;i<a.length;i++){if(!/maskable/.test(a[i].purpose||'')&&/192|256|384|512/.test(a[i].sizes||'')){b=a[i];break}}
+  if(!b)b=a[0];
+  if(b&&b.src){icon=new URL(b.src,mh).href;all()}
+ }).catch(function(){});
+}catch(e){}
+function st(){var inst=sa||done;return{rk:1,t:'inst',can:!!dp&&!inst&&phase==='idle',ios:ios&&!inst,installed:inst,phase:phase,icon:icon}}
+function tell(w){try{w.postMessage(st(),'*')}catch(e){}}
+function all(){subs.forEach(tell)}
+function set(p){phase=p;all()}
+window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();dp=e;all()});
+window.addEventListener('appinstalled',function(){done=true;dp=null;clearTimeout(tm);phase='idle';all()});
+window.addEventListener('message',function(e){try{
+ if(!ORG.test(String(e.origin||'')))return;
+ var d=e.data;if(!d||d.rk!==1)return;
+ if(d.t==='inst?'){if(subs.indexOf(e.source)<0){subs.push(e.source);if(subs.length>8)subs.shift()}tell(e.source)}
+ else if(d.t==='inst!'&&dp&&phase==='idle'){
+  var p=dp;dp=null;all();p.prompt();
+  p.userChoice.then(function(r){
+   if(r&&r.outcome==='accepted'&&!done){set('installing');clearTimeout(tm);tm=setTimeout(function(){if(phase==='installing')set('slow')},90000)}
+   else set('idle');
+  }).catch(function(){set('idle')});
+ }
+}catch(x){}});
+}catch(e){}})();
+</script>
 </body>
 </html>
