@@ -1,0 +1,13 @@
+{
+  "name": "Rasel Collection Cell",
+  "short_name": "Rasel Cell",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0b1b3b",
+  "theme_color": "#0b1b3b",
+  "icons": [
+    {"src": "rasel_collection_cell_icon_512_custom.png", "sizes": "192x192", "type": "image/png"},
+    {"src": "rasel_collection_cell_icon_512_custom.png", "sizes": "512x512", "type": "image/png"}
+  ]
+}
