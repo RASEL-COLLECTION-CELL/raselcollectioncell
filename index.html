@@ -882,18 +882,33 @@ document.addEventListener('keydown',ky);
    if(typeof n!=='string'||n==='then')return undefined;
    return function(){
     var a=Array.prototype.slice.call(arguments);
-    fetch(API,{method:'POST',body:JSON.stringify({fn:n,args:a}),redirect:'follow',credentials:'omit'})
-     .then(function(r){return r.json()})
-     .then(function(j){
-      if(j&&j.__err){if(fail)fail(new Error(String(j.__err)));return}
-      if(ok)ok(j?j.v:undefined);
-     })
-     .catch(function(e){if(fail)fail(e instanceof Error?e:new Error('koneksi'))});
+    var body=JSON.stringify({fn:n,args:a}),aman=/^(eventLayak|eventPelanggan|promoPelanggan)$/.test(n),coba=0;
+    (function kirim(){
+     var ac=window.AbortController?new AbortController():null,got=false,tm=ac?setTimeout(function(){try{ac.abort()}catch(x){}},30000):0;
+     fetch(API,{method:'POST',body:body,redirect:'follow',credentials:'omit',signal:ac?ac.signal:undefined})
+      .then(function(r){return r.text()})
+      .then(function(t){
+       clearTimeout(tm);var j;
+       try{j=JSON.parse(t)}catch(x){var e1=new Error('server');e1.kode='server';throw e1}
+       if(j&&j.__err){var e2=new Error(String(j.__err));e2.kode='err';e2.final=1;throw e2}
+       got=true;if(ok)ok(j?j.v:undefined);
+      })
+      .catch(function(e){
+       clearTimeout(tm);
+       if(aman&&coba<1&&!got&&!(e&&e.final)){coba++;setTimeout(kirim,1200);return}
+       try{console.warn('[RASEL] panggilan gagal:',n,e&&e.name,e&&e.message)}catch(x){}
+       var er=e instanceof Error?e:new Error('koneksi');
+       if(!er.kode)er.kode=(er.name==='AbortError')?'waktu':'koneksi';
+       if(er.kode==='err')er.kode='server';
+       if(fail)fail(er);
+      });
+    })();
    };
   }});
  }
  window.google={script:{run:mk(null,null)}};
 }catch(e){}})();
+window.RKERR=function(e){var k=e&&e.kode;return k==='server'?'Server sedang bermasalah. Coba lagi sebentar lagi.':k==='waktu'?'Server lambat merespons. Coba lagi.':'Koneksi bermasalah. Coba lagi.'};
 var RK_ORIGIN_INDUK=(window.top===window&&location.origin&&location.origin!=='null')?location.origin:'https://rasel-collection-cell.github.io';/* satu-satunya halaman induk yang boleh menerima/mengirim pesan suara */</script>
 <script>
 (function(){
@@ -2283,7 +2298,7 @@ function buka(){
   +'</select><label for="evP">Produk</label><select id="evP" class="evsel"></select><div class="evk" id="evInfo" style="margin:-4px 0 10px"></div></div><p id="evMsg"></p>'
   +'<div class="row"><button class="btn ghost" data-evc="1" type="button">Tutup</button><button class="btn gold" data-evgo="1" type="button"><span class="t">Klaim</span></button></div></div></div>';
   m.classList.add('on');fillP();
- }).withFailureHandler(function(){busy=false;alert('Koneksi bermasalah. Coba lagi.')}).eventLayak(tok());
+ }).withFailureHandler(function(er){busy=false;alert(window.RKERR?RKERR(er):'Koneksi bermasalah. Coba lagi.')}).eventLayak(tok());
 }
 function tutup(){m.classList.remove('on');m.innerHTML=''}
 function kirim(btn){
