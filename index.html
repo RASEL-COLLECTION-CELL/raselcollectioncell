@@ -6,6 +6,9 @@
 <link rel="preconnect" href="https://rasel-collection-cell.github.io"> <!-- RSP: percepat video sambutan -->
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#0F2A5F">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="logo-emas.png">
+<meta name="mobile-web-app-capable" content="yes">
 <title>RASEL COLLECTION CELL</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -907,7 +910,7 @@ document.addEventListener('keydown',ky);
        try{console.warn('[RASEL] panggilan gagal:',n,e&&e.name,e&&e.message)}catch(x){}
        var er=e instanceof Error?e:new Error('koneksi');
        if(!er.kode)er.kode=(er.name==='AbortError')?'waktu':'koneksi';
-       if(er.kode==='err')er.kode='server';
+       if(er.kode==='err')er.kode='server';try{er.fn=n}catch(x){}
        if(fail)fail(er);
       });
     })();
@@ -5698,6 +5701,55 @@ function next(){
 }
 setTimeout(next,1200);
 setTimeout(function(){try{new Image().src='https://rasel-collection-cell.github.io/raselcollectioncell/rk-bg.jpg'}catch(e){}},3500);
+}catch(e){}})();
+</script>
+
+<!-- ===== RKPWA v1 (ADD-ONLY): pasang aplikasi (PWA) di GitHub Pages. Mendaftarkan sw.js dan menjawab pesan 'inst?' / 'inst!' dari kotak "Pasang aplikasi Rasel" (blok RKI). Tempel TEPAT SEBELUM </body>, setelah blok terakhir. Code.gs/EventPatch.gs tidak disentuh. ===== -->
+<script>
+(function(){try{
+if(window.RK_BLOK||window.top!==window)return;
+var W=window,D=document,dp=null,slow=0,ST={installed:false,phase:'idle'};
+function org(){try{return (typeof RK_ORIGIN_INDUK==='string'&&RK_ORIGIN_INDUK)||location.origin}catch(e){return location.origin}}
+function std(){try{return !!(matchMedia('(display-mode: standalone)').matches||matchMedia('(display-mode: fullscreen)').matches||navigator.standalone)}catch(e){return false}}
+function ios(){try{var u=navigator.userAgent||'';return /iPhone|iPad|iPod/i.test(u)||(/Macintosh/i.test(u)&&navigator.maxTouchPoints>1)}catch(e){return false}}
+function icon(){try{return new URL('logo-emas.png',location.href).href}catch(e){return ''}}
+function snap(){var inst=ST.installed||std();return {rk:1,t:'inst',can:!!dp&&!inst,ios:ios()&&!inst,installed:inst,phase:ST.phase,icon:icon()}}
+function tell(){try{W.postMessage(snap(),org())}catch(e){}}
+function go(){try{
+ if(!dp||ST.installed)return;
+ var p=dp;dp=null;
+ p.prompt();
+ (p.userChoice||Promise.resolve({outcome:'dismissed'})).then(function(c){
+  if(c&&c.outcome==='accepted'){
+   ST.phase='installing';tell();clearTimeout(slow);
+   slow=setTimeout(function(){if(!ST.installed){ST.phase='slow';tell()}},15000);
+  }else{ST.phase='idle';tell()}
+ }).catch(function(){ST.phase='idle';tell()});
+}catch(x){ST.phase='idle';tell()}}
+W.addEventListener('beforeinstallprompt',function(e){try{e.preventDefault();dp=e;tell()}catch(x){}});
+W.addEventListener('appinstalled',function(){try{ST.installed=true;ST.phase='idle';dp=null;clearTimeout(slow);tell()}catch(x){}});
+W.addEventListener('message',function(e){try{
+ var d=e.data;if(!d||d.rk!==1||e.source!==W||e.origin!==org())return;
+ if(d.t==='inst?')tell();
+ else if(d.t==='inst!')go();
+}catch(x){}});
+function reg(){try{
+ if(!('serviceWorker' in navigator))return;
+ if(location.protocol!=='https:'&&location.hostname!=='localhost')return;
+ navigator.serviceWorker.register('sw.js').catch(function(){});
+}catch(e){}}
+if(D.readyState==='complete')setTimeout(reg,3000);else W.addEventListener('load',function(){setTimeout(reg,3000)});
+}catch(e){}})();
+</script>
+<!-- ===== RKDX v1 (ADD-ONLY): alat cek galat server. Buka halaman dengan #rkdebug di ujung alamat -> pesan galat menampilkan nama fungsi dan alasan dari server; #rkdebugoff untuk mematikan. Tanpa itu, tampilan pelanggan tidak berubah. ===== -->
+<script>
+(function(){try{
+var h=location.hash;
+if(/^#rkdebug$/i.test(h)){try{localStorage.setItem('rkDebug','1')}catch(e){}}
+if(/^#rkdebugoff$/i.test(h)){try{localStorage.removeItem('rkDebug')}catch(e){}}
+if(typeof window.RKERR!=='function')return;
+var o=window.RKERR;
+window.RKERR=function(e){var s=o(e);try{if(localStorage.getItem('rkDebug')==='1'&&e){s+=' ['+(e.fn||'?')+' / '+(e.kode||'')+' / '+String(e.message||e.name||'').slice(0,160)+']'}}catch(x){}return s};
 }catch(e){}})();
 </script>
 
