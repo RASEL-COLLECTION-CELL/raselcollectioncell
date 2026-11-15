@@ -894,7 +894,7 @@ document.addEventListener('keydown',ky);
  }
  window.google={script:{run:mk(null,null)}};
 }catch(e){}})();
-var RK_ORIGIN_INDUK='https://rasel-collection-cell.github.io';/* satu-satunya halaman induk yang boleh menerima/mengirim pesan suara */</script>
+var RK_ORIGIN_INDUK=(window.top===window&&location.origin&&location.origin!=='null')?location.origin:'https://rasel-collection-cell.github.io';/* satu-satunya halaman induk yang boleh menerima/mengirim pesan suara */</script>
 <script>
 (function(){
 var $=function(s){return document.querySelector(s)};
@@ -3740,7 +3740,7 @@ window.addEventListener('message',function(e){
 function fin(id,ok){var p=pend[id];if(!p)return;delete pend[id];clearTimeout(p.t1);clearTimeout(p.t2);p.cb(ok)}
 function mp3(file,cb,gap){
  var id=++seq;
- if(window.top===window){cb(false);return}
+ if(window.top===window&&!window.RKPLAYER){cb(false);return}
  pend[id]={cb:cb,ack:0};
  pend[id].t1=setTimeout(function(){try{window.top.postMessage({rk:1,t:'stop'},RK_ORIGIN_INDUK)}catch(x){}fin(id,false)},3500);
  try{window.top.postMessage({rk:1,t:'play',id:id,file:file,vol:CFG.vol,gap:gap},RK_ORIGIN_INDUK)}catch(e){fin(id,false)}
@@ -3748,7 +3748,7 @@ function mp3(file,cb,gap){
 function stopAll(){window.RKVBUSY=0;
  tok++;
  try{if(SS)SS.cancel()}catch(e){}
- try{if(window.top!==window)window.top.postMessage({rk:1,t:'stop'},RK_ORIGIN_INDUK)}catch(e){}
+ try{if(window.top!==window||window.RKPLAYER)window.top.postMessage({rk:1,t:'stop'},RK_ORIGIN_INDUK)}catch(e){}
  Object.keys(pend).forEach(function(k){var p=pend[k];if(p){delete pend[k];clearTimeout(p.t1);clearTimeout(p.t2)}});
 }
 function say(text,cb){
@@ -3783,7 +3783,7 @@ function jalan(){
  try{var d0=(window.RCC&&RCC.d&&RCC.d())||{},s0=String(d0.namaSuara||'').trim()||nama,g0=/^pelanggan\s*\d+$/i.test(s0),
   k0=g0?'setia':(ALIAS[slug(s0.toLowerCase().replace(/[^a-z\u00C0-\u024F\s]/g,' ').replace(/\s+/g,' ').trim())]||slug(s0.toLowerCase().replace(/[^a-z\u00C0-\u024F\s]/g,' ').replace(/\s+/g,' ').trim()));
   var w1=s0.toLowerCase().replace(/[^a-z\u00C0-\u024F\s]/g,' ').replace(/\s+/g,' ').trim().split(' ')[0]||'',k1=g0?'':(ALIAS[slug(w1)]||slug(w1));
-  if(nama&&window.top!==window)window.top.postMessage({rk:1,t:'pre',files:['rk-nama-'+k0+'.mp3'].concat(k1&&k1!==k0?['rk-nama-'+k1+'.mp3']:[])},RK_ORIGIN_INDUK)}catch(e){}
+  if(nama&&(window.top!==window||window.RKPLAYER))window.top.postMessage({rk:1,t:'pre',files:['rk-nama-'+k0+'.mp3'].concat(k1&&k1!==k0?['rk-nama-'+k1+'.mp3']:[])},RK_ORIGIN_INDUK)}catch(e){}
  var S=[
   function(nx){mp3(CFG.ting,function(ok){if(!ok){try{if(window.RKSND)RKSND.play('ok')}catch(e){}}setTimeout(nx,ok?100:250)})},
   function(nx){mp3(CFG.salam[wk],function(ok){if(ok)nx();else say('Selamat '+wk,nx)})},
@@ -4506,7 +4506,7 @@ window.addEventListener('message',function(e){try{
 }catch(x){}});
 function fin(id,ok){var p=pend[id];if(!p)return;delete pend[id];clearTimeout(p.t1);clearTimeout(p.t2);p.cb(ok)}
 function mp3(file,cb){
- if(window.top===window){cb(false);return}
+ if(window.top===window&&!window.RKPLAYER){cb(false);return}
  var id=++seq;pend[id]={cb:cb};
  pend[id].t1=setTimeout(function(){fin(id,false)},3000);
  try{window.top.postMessage({rk:1,t:'play',id:id,file:file,vol:.85},RK_ORIGIN_INDUK)}catch(e){fin(id,false)}
@@ -4664,7 +4664,7 @@ window.addEventListener('message',function(e){try{
 function bicara(k){try{
  if(muted())return;
  try{if(SS)SS.cancel()}catch(e){}
- if(window.top===window){say(SP[k]);return}
+ if(window.top===window&&!window.RKPLAYER){say(SP[k]);return}
  var id='i'+(++seq);pend[id]={k:k};
  pend[id].t=setTimeout(function(){fin(id,false,k)},3000);
  window.top.postMessage({rk:1,t:'stop'},RK_ORIGIN_INDUK);
@@ -5500,6 +5500,148 @@ function muat(paksa){
 if(window.MutationObserver)new MutationObserver(function(){if(v.getAttribute('data-rkt')==='promo')muat(false)}).observe(v,{attributes:true,attributeFilter:['data-rkt']});
 }catch(e){}})();
 </script>
+
+<!-- ===== RKPLAYER v1: PEMUTAR MP3 MANDIRI (ADD-ONLY) =====
+     Dipakai saat halaman ini berdiri sendiri di GitHub Pages (tanpa halaman induk). Menjawab pesan play/stop/pre dengan format yang sama
+     seperti halaman induk lama: ack -> res. Gagal / diblokir browser -> res ok:false -> otomatis suara HP. Hapus blok ini untuk membatalkan. -->
+<script>
+(function(){try{
+if(window.top!==window)return;
+window.RKPLAYER=1;
+var BASE='https://rasel-collection-cell.github.io/raselcollectioncell/',cache={},cur=null;
+function reply(o){try{window.postMessage(o,RK_ORIGIN_INDUK)}catch(e){}}
+function get(f){
+ f=String(f||'');if(!/^rk-[a-z0-9._-]+\.mp3$/i.test(f))return null;
+ if(!cache[f]){var a=new Audio();a.preload='auto';a.src=BASE+f;cache[f]=a}
+ return cache[f];
+}
+function halt(){
+ if(!cur)return;var c=cur;cur=null;
+ c.done=true;try{c.a.onplaying=c.a.onended=c.a.onerror=c.a.ontimeupdate=null;c.a.pause();c.a.currentTime=0}catch(e){}
+}
+function play(d){
+ halt();
+ var a=get(d.file);if(!a){reply({rk:1,t:'res',id:d.id,ok:false});return}
+ var me={a:a,id:d.id,done:false},gap=+d.gap||0;cur=me;
+ function fin(ok){if(me.done)return;me.done=true;if(cur===me){cur=null;a.onplaying=a.onended=a.onerror=a.ontimeupdate=null}reply({rk:1,t:'res',id:d.id,ok:ok})}
+ a.onplaying=function(){reply({rk:1,t:'ack',id:d.id})};
+ a.onended=function(){fin(true)};
+ a.onerror=function(){fin(false)};
+ a.ontimeupdate=function(){if(gap>0&&a.duration&&a.duration-a.currentTime<=gap)fin(true)};
+ try{
+  a.volume=Math.max(0,Math.min(1,+d.vol||.85));
+  try{a.currentTime=0}catch(e){}
+  var p=a.play();if(p&&p.catch)p.catch(function(){fin(false)});
+ }catch(e){fin(false)}
+}
+window.addEventListener('message',function(e){try{
+ var d=e.data;if(!d||d.rk!==1||e.source!==window||e.origin!==RK_ORIGIN_INDUK)return;
+ if(d.t==='play')play(d);
+ else if(d.t==='stop')halt();
+ else if(d.t==='pre'&&d.files&&d.files.length){for(var i=0;i<d.files.length&&i<4;i++)get(d.files[i])}
+}catch(x){}});
+/* muat lebih awal file yang pasti dipakai */
+setTimeout(function(){['rk-100.mp3','rk-pagi.mp3','rk-siang.mp3','rk-sore.mp3','rk-malam.mp3','rk-sambutan.mp3'].forEach(get)},2500);
+}catch(e){}})();
+</script>
+
+<!-- ===== RKM v1: MASKOT ANAK (VIDEO) untuk sambutan setelah login, klaim hadiah, dan klaim event (ADD-ONLY) =====
+     Tempel TEPAT SEBELUM </body> di Index.html Apps Script (paling bawah, sesudah blok-blok lain).
+     Butuh 2 file di GitHub, folder yang sama dengan index.html: anak-sambutan.mp4 dan anak-pesta.mp4.
+     Bila video gagal dimuat atau dimatikan (hemat data, kurangi animasi), tampilan lama tetap dipakai. -->
+<style>
+.rkm{position:relative;border-radius:50%;overflow:hidden;background:#1b130a;flex:none;opacity:0;transform:scale(.85);
+ box-shadow:0 0 0 3px #E7B84F,0 0 0 5px rgba(255,224,138,.35),0 10px 26px -6px rgba(0,0,0,.55);
+ transition:opacity .5s ease,transform .5s cubic-bezier(.2,.7,.2,1)}
+.rkm.siap{opacity:1;transform:none}
+.rkm video{display:block;width:100%;height:100%;object-fit:cover;pointer-events:none}
+#welcome .rkm{position:absolute;z-index:3;left:50%;bottom:calc(50% + 104px);width:min(40vw,22vh,176px);height:min(40vw,22vh,176px);margin-left:calc(min(40vw,22vh,176px) / -2)}
+.dg .rkm{width:132px;height:132px;margin:-4px auto 6px}
+#evcel .rkm:not(.siap),.dg .rkm:not(.siap){display:none}
+#evcel .rkm{width:104px;height:104px;margin:0 auto 10px}
+#evcel .rkm.siap~.evcel-ring{display:none}
+</style>
+<script>
+(function(){try{
+var BASE='https://rasel-collection-cell.github.io/raselcollectioncell/',D=document;
+var F={s:'anak-sambutan.mp4',p:'anak-pesta.mp4'};
+try{if(matchMedia('(prefers-reduced-motion: reduce)').matches)return}catch(e){}
+try{var c=navigator.connection;if(c&&(c.saveData||/(^|-)2g$/.test(c.effectiveType||'')))return}catch(e){}
+
+/* satu pembungkus bundar berisi video tanpa suara; gagal muat -> pembungkus dibuang (tampilan lama tetap) */
+function mk(f){
+ var w=D.createElement('div');w.className='rkm';w.setAttribute('aria-hidden','true');
+ var v=D.createElement('video');
+ v.muted=true;v.defaultMuted=true;v.loop=true;v.playsInline=true;
+ v.setAttribute('muted','');v.setAttribute('playsinline','');v.setAttribute('preload','auto');v.tabIndex=-1;v.disablePictureInPicture=true;
+ v.addEventListener('loadeddata',function(){
+  w.classList.add('siap');if(w.rkReady)w.rkReady();
+  if(w.rkSync)w.rkSync();else{try{var p=v.play();if(p&&p.catch)p.catch(function(){})}catch(e){}}
+ });
+ v.addEventListener('error',function(){try{if(w.rkFail)w.rkFail();if(w.parentNode)w.parentNode.removeChild(w)}catch(e){}});
+ v.src=BASE+f;w.appendChild(v);return w;
+}
+function jalan(v,on){try{if(on){if(v.paused){var p=v.play();if(p&&p.catch)p.catch(function(){})}}else if(!v.paused)v.pause()}catch(e){}}
+
+/* 1) sambutan setelah login: video dimuat lebih awal, hanya diputar saat layar sambutan tampil */
+var W=D.getElementById('welcome');
+if(W){
+ var ww=mk(F.s),wv=ww.firstChild;
+ ww.rkSync=function(){jalan(wv,W.classList.contains('on')&&!W.classList.contains('out'))};
+ W.appendChild(ww);
+ if(window.MutationObserver)new MutationObserver(ww.rkSync).observe(W,{attributes:true,attributeFilter:['class']});
+}
+
+/* video perayaan dimuat lebih awal (cache), supaya langsung tampil saat klaim */
+setTimeout(function(){try{var pv=D.createElement('video');pv.muted=true;pv.preload='auto';pv.src=BASE+F.p}catch(e){}},4000);
+
+/* 2) klaim hadiah berhasil: gambar ikon diganti video perayaan */
+var M=D.getElementById('modal'),lastH=null;
+if(M&&window.MutationObserver){
+ new MutationObserver(function(){
+  var h=M.querySelector('.dg h3');
+  if(!h){lastH=null;return}
+  if(h===lastH)return;lastH=h;
+  if(!/^Klaim berhasil/.test(h.textContent||''))return;
+  var ic=M.querySelector('.dg .ic2');if(!ic||!ic.parentNode)return;
+  var w=mk(F.p);w.rkReady=function(){ic.style.display='none'};w.rkFail=function(){ic.style.display=''};
+  ic.parentNode.insertBefore(w,ic);
+ }).observe(M,{childList:true});
+ /* hemat baterai: berhenti saat dialog ditutup */
+ new MutationObserver(function(){
+  var on=M.classList.contains('on');
+  [].forEach.call(M.querySelectorAll('.rkm video'),function(v){jalan(v,on)});
+ }).observe(M,{attributes:true,attributeFilter:['class']});
+}
+
+/* 3) klaim event berhasil: popup perayaan #evcel (banner tematik tetap, video anak ditambah di atas kartu) */
+if(window.MutationObserver)new MutationObserver(function(ms){
+ ms.forEach(function(m){[].forEach.call(m.addedNodes,function(n){
+  try{
+   if(!n||n.id!=='evcel')return;
+   var card=n.querySelector('.evcel-card');if(!card||card.querySelector('.rkm'))return;
+   card.insertBefore(mk(F.p),card.firstChild);
+  }catch(e){}
+ })});
+}).observe(D.body,{childList:true});
+}catch(e){}})();
+</script>
+
+<!-- ===== RKM-FIT v2: lingkaran maskot dikunci ke cincin emas di rk-latar.mp4 + teks sambutan di bawah cincin (ADD-ONLY, CSS saja; hapus blok ini untuk mengembalikan) =====
+     Ukuran/posisi dihitung dari cara latar "cover" menutupi layar: cincin emas berpusat di 50% lebar & 31,9% tinggi video,
+     jari-jari dalam = 23,75% lebar video. Lingkaran diberi diameter 45% lebar video agar pas di dalam cincin. -->
+<style>
+#welcome{--rkHv:max(100vh,177.7778vw)}
+@supports (height:100dvh){#welcome{--rkHv:max(100dvh,177.7778vw)}}
+#welcome{--rkD:calc(var(--rkHv) * .2531)}
+#welcome .rkm{width:var(--rkD);height:var(--rkD);left:50%;margin-left:calc(var(--rkD) / -2);
+ bottom:auto;top:calc(50% - var(--rkHv) * .181);margin-top:calc(var(--rkD) / -2)}
+/* kepala + topi terlihat utuh di dalam lingkaran */
+.rkm video{object-position:50% 6%}
+/* teks sambutan turun tepat di bawah cincin emas */
+#welcome .wl-txt{position:relative;top:calc(81px - var(--rkHv) * .036)}
+#welcome .wl-txt p{text-shadow:0 1px 8px rgba(3,4,11,.9),0 0 3px rgba(3,4,11,.8)}
+</style>
 
 </body>
 </html>
