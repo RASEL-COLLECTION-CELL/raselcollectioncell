@@ -721,7 +721,7 @@ var RSP_VIDEO="https://rasel-collection-cell.github.io/raselcollectioncell/anak.
   }catch(e){}}
 
   /* 2) Status bertahap + bilah kemajuan */
-  var tahap=[[0,'Menyiapkan halaman…',8],[3500,'Menghubungkan ke server…',42],[8000,'Hampir selesai…',78]];
+  var tahap=[[0,'Menyiapkan halaman…',8],[1000,'Menghubungkan ke server…',42],[1900,'Hampir selesai…',78]];
   function ganti(t,p){
     teks.style.opacity=0;
     setTimeout(function(){teks.textContent=t;teks.style.opacity=1},220);
@@ -741,7 +741,7 @@ var RSP_VIDEO="https://rasel-collection-cell.github.io/raselcollectioncell/anak.
       setTimeout(function(){muat.style.display='none';stopLangit();lepas();try{if(vid)vid.pause()}catch(e){}},450);
     },120);
   }
-  if(document.readyState==='complete')setTimeout(tutup,60);else addEventListener('load',function(){setTimeout(tutup,60)});
+  setTimeout(tutup,2500);   /* layar pembuka tampil ~3 detik (2,5 dtk + animasi tutup) */
   setTimeout(tutup,45000);
 })();
 }catch(e){window.__rspErr=String(e);var m=document.getElementById("rsp");if(m&&m.parentNode)m.parentNode.removeChild(m)}})();
