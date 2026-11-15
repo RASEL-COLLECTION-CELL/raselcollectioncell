@@ -744,7 +744,7 @@ var pd=function(e){if(e.cancelable)e.preventDefault()},
  wh=function(e){if(e.ctrlKey&&e.cancelable)e.preventDefault()},
  ky=function(e){if((e.ctrlKey||e.metaKey)&&(e.key==='+'||e.key==='-'||e.key==='='||e.key==='0')&&e.cancelable)e.preventDefault()};
 ['gesturestart','gesturechange','gestureend'].forEach(function(n){document.addEventListener(n,pd,{passive:false})});
-document.addEventListener('touchmove',tm,{passive:false});
+document.addEventListener('touchmove',tm,{passive:true});
 document.addEventListener('wheel',wh,{passive:false});
 document.addEventListener('keydown',ky);
 }catch(e){}})();</script>
@@ -5642,6 +5642,35 @@ if(window.MutationObserver)new MutationObserver(function(ms){
 #welcome .wl-txt{position:relative;top:calc(81px - var(--rkHv) * .036)}
 #welcome .wl-txt p{text-shadow:0 1px 8px rgba(3,4,11,.9),0 0 3px rgba(3,4,11,.8)}
 </style>
+
+<!-- ===== RKFIX2 v1: anti layar putih saat scroll + pemanasan video (ADD-ONLY) ===== -->
+<style>body{background-color:#03040c!important}</style>
+<script>
+(function(){try{
+/* Pemanasan video: HP menunda mengunduh video sebelum diputar, jadi video yang baru dipanggil terlambat tampil.
+   Di sini tiap video diunduh lebih dulu secara berurutan lewat elemen tersembunyi (bisu, 1-2 dtk), lalu dibuang; pemakaian aslinya mengambil dari cache. */
+var BASE='https://rasel-collection-cell.github.io/raselcollectioncell/',D=document;
+try{if(matchMedia('(prefers-reduced-motion: reduce)').matches)return}catch(e){}
+try{var c=navigator.connection;if(c&&(c.saveData||/(^|-)2g$/.test(c.effectiveType||'')))return}catch(e){}
+try{if(navigator.deviceMemory&&navigator.deviceMemory<=1)return}catch(e){}
+var L=['anak-sambutan.mp4','rk-latar.mp4','anak-pesta.mp4'],i=0;
+function next(){
+ if(i>=L.length)return;var f=L[i++];
+ if(D.hidden){setTimeout(function(){i--;next()},2000);return}
+ var v=D.createElement('video'),done=false;
+ v.muted=true;v.defaultMuted=true;v.playsInline=true;v.preload='auto';
+ v.setAttribute('muted','');v.setAttribute('playsinline','');v.setAttribute('aria-hidden','true');v.tabIndex=-1;
+ v.style.cssText='position:fixed;left:-20px;top:0;width:2px;height:2px;opacity:0;pointer-events:none';
+ function end(){if(done)return;done=true;try{v.pause();v.removeAttribute('src');v.load();v.remove()}catch(e){}setTimeout(next,300)}
+ v.addEventListener('error',end);
+ v.addEventListener('timeupdate',function(){if(v.currentTime>1.2)end()});
+ v.src=BASE+f;D.body.appendChild(v);
+ try{var p=v.play();if(p&&p.catch)p.catch(function(){})}catch(e){}
+ setTimeout(end,7000);
+}
+setTimeout(next,1200);
+}catch(e){}})();
+</script>
 
 </body>
 </html>
