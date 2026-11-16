@@ -3793,7 +3793,12 @@ function txt(id){return ((D.getElementById(id)||{}).textContent||'').replace(/\s
 function slug(n){return String(n).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')}
 /* PENGECUALIAN SUARA NAMA: kiri = nama di sheet (huruf kecil, spasi jadi -), kanan = nama file rekaman tanpa 'rk-nama-' dan '.mp3'.
    Berlaku untuk SEMUA pelanggan dengan nama itu. Tambah baris baru dengan koma. */
-var ALIAS={};
+var ALIAS={
+ 'seli-wulan':'ibu-seli-wulan','ibu-seli-wulan':'ibu-seli-wulan',
+ 'siti-miati':'ibu-siti-miati','ibu-siti-miati':'ibu-siti-miati',
+ 'denis':'kaka-denis','kaka-denis':'kaka-denis',
+ 'rahmt-hidayat':'bapak-rahmt-hidayat','rahmat-hidayat':'bapak-rahmt-hidayat','bapak-rahmt-hidayat':'bapak-rahmt-hidayat','bapak-rahmat-hidayat':'bapak-rahmt-hidayat'
+};
 function waktu(){
  var g=txt('wGreet').toLowerCase(),m=/pagi|siang|sore|malam/.exec(g);
  if(m)return m[0];
