@@ -106,6 +106,11 @@ html,body{margin:0;height:100%;background:var(--bg);overflow:hidden}
   .batang b{transition:none}
 }
 </style>
+<style id="rkb19-css">
+/* ===== RKB19 (ADD-ONLY): video bayi (anak.mp4) di dalam cincin emas layar pembuka. SVG lama tetap di bawahnya sebagai cadangan; hapus blok ini + tag <video id="vAnak"> + skrip RKB19 untuk mengembalikan ===== */
+.lambang #vAnak{position:absolute;left:14.17%;top:14.17%;width:71.67%;height:71.67%;border-radius:50%;object-fit:cover;background:#0e0905;opacity:0;transition:opacity .6s ease;pointer-events:none}
+.lambang #vAnak.siap{opacity:1}
+</style>
 </head>
 <body>
 
@@ -159,6 +164,7 @@ html,body{margin:0;height:100%;background:var(--bg);overflow:hidden}
         </g>
         <circle cx="60" cy="60" r="43" fill="none" stroke="rgba(70,40,5,.7)" stroke-width="1.2"/>
       </svg>
+      <video id="vAnak" muted loop playsinline preload="none" disablepictureinpicture aria-hidden="true"></video>
     </div>
 
     <h1 class="merek u" style="--t:.2s">RASEL</h1>
@@ -427,6 +433,24 @@ window.addEventListener('message',function(e){try{
   }).catch(function(){set('idle')});
  }
 }catch(x){}});
+}catch(e){}})();
+</script>
+<script>
+/* ===== RKB19 (ADD-ONLY): memutar anak.mp4 di layar pembuka. Gagal dimuat -> SVG lama tetap tampil ===== */
+(function(){try{
+var URL_V="https://rasel-collection-cell.github.io/raselcollectioncell/anak.mp4",vid=document.getElementById('vAnak'),muat=document.getElementById('muat');
+if(!vid)return;
+var lemah=false,kurang=false;
+try{var nv=navigator,cn=nv.connection;kurang=!!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches);
+ lemah=!!((nv.deviceMemory&&nv.deviceMemory<=2)||(nv.hardwareConcurrency&&nv.hardwareConcurrency<=4)||(cn&&(cn.saveData||/(^|-)2g$/.test(cn.effectiveType||''))))}catch(e){}
+if(lemah||kurang)return;
+vid.muted=true;vid.preload='auto';vid.src=URL_V;
+var main=function(){vid.classList.add('siap');var p=vid.play();if(p&&p.catch)p.catch(function(){})};
+vid.addEventListener('loadeddata',main);
+vid.addEventListener('canplay',main);
+var coba=0;
+vid.addEventListener('error',function(){vid.classList.remove('siap');if(coba<2){coba++;setTimeout(function(){try{vid.src=URL_V+'?r='+Date.now();vid.load()}catch(e){}},700*coba)}});
+if(muat&&window.MutationObserver)new MutationObserver(function(){if(muat.style.display==='none'||muat.classList.contains('selesai')){try{vid.pause()}catch(e){}}}).observe(muat,{attributes:true,attributeFilter:['class','style']});
 }catch(e){}})();
 </script>
 </body>
