@@ -1,7 +1,7 @@
 // Rasel Collection Cell - SW aman: hanya cache aset statis (gambar, audio, font).
 // HTML, JSON, script.google.com, dan semua non-GET TIDAK disentuh -> data selalu segar.
 // Naikkan VERSI setiap kali mengganti logo/ikon/suara agar cache lama dibuang.
-var VERSI = 'rcc-static-v1';
+var VERSI = 'rcc-static-v2';
 var MAX_ITEM = 80;
 
 self.addEventListener('install', function () { self.skipWaiting(); });
@@ -25,13 +25,44 @@ function aset(url) {
   return url.hostname === 'fonts.gstatic.com';
 }
 
+// mp3 rk-*: HP selalu meminta audio dengan header Range, jadi dulu tidak pernah masuk cache.
+// Ambil file utuh sekali, simpan, lalu layani potongan Range dari cache.
+function potong(req, url) {
+  var m = /^bytes=(\d*)-(\d*)$/.exec(req.headers.get('range') || '');
+  return caches.open(VERSI).then(function (c) {
+    return c.match(url.href).then(function (hit) {
+      if (hit) return hit;
+      return fetch(url.href).then(function (res) {
+        if (res && res.ok && res.status === 200) c.put(url.href, res.clone()).catch(function () {});
+        return res;
+      });
+    });
+  }).then(function (res) {
+    if (!m || !res || res.status !== 200) return res;
+    return res.arrayBuffer().then(function (buf) {
+      var n = buf.byteLength, a, b;
+      if (m[1] === '') { a = Math.max(0, n - (+m[2])); b = n - 1; }
+      else { a = +m[1]; b = m[2] === '' ? n - 1 : Math.min(+m[2], n - 1); }
+      if (!(a <= b) || a >= n) return new Response(null, { status: 416, headers: { 'Content-Range': 'bytes */' + n } });
+      return new Response(buf.slice(a, b + 1), { status: 206, statusText: 'Partial Content', headers: {
+        'Content-Type': res.headers.get('Content-Type') || 'audio/mpeg',
+        'Content-Length': String(b - a + 1),
+        'Content-Range': 'bytes ' + a + '-' + b + '/' + n,
+        'Accept-Ranges': 'bytes' } });
+    });
+  }).catch(function () { return fetch(req); });
+}
+
 self.addEventListener('fetch', function (e) {
   var req = e.request;
   if (req.method !== 'GET') return;
   var url;
   try { url = new URL(req.url); } catch (x) { return; }
   if (!aset(url)) return;               // selain aset statis: biarkan browser
-  if (req.headers.has('range')) return; // audio/video range: biarkan
+  if (req.headers.has('range')) {         // audio/video range: biarkan, kecuali mp3 rk-*
+    if (url.origin === self.location.origin && /\/rk-[a-z0-9._-]+\.mp3$/i.test(url.pathname)) e.respondWith(potong(req, url));
+    return;
+  }
 
   e.respondWith(
     caches.open(VERSI).then(function (c) {
