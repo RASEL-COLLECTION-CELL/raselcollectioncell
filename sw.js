@@ -26,29 +26,29 @@ function aset(url) {
 }
 
 // mp3 rk-*: HP selalu meminta audio dengan header Range, jadi dulu tidak pernah masuk cache.
-// Ambil file utuh sekali, simpan, lalu layani potongan Range dari cache.
-function potong(req, url) {
+// Belum ada di cache -> layani langsung dari jaringan (tanpa menunggu) dan simpan file utuh di latar belakang.
+// Sudah ada di cache -> layani potongan Range dari cache.
+function potong(e, req, url) {
   var m = /^bytes=(\d*)-(\d*)$/.exec(req.headers.get('range') || '');
   return caches.open(VERSI).then(function (c) {
     return c.match(url.href).then(function (hit) {
-      if (hit) return hit;
-      return fetch(url.href).then(function (res) {
-        if (res && res.ok && res.status === 200) c.put(url.href, res.clone()).catch(function () {});
-        return res;
+      if (!hit || !m) {
+        if (!hit) e.waitUntil(fetch(url.href).then(function (res) {
+          if (res && res.ok && res.status === 200) return c.put(url.href, res);
+        }).catch(function () {}));
+        return fetch(req);
+      }
+      return hit.arrayBuffer().then(function (buf) {
+        var n = buf.byteLength, a, b;
+        if (m[1] === '') { a = Math.max(0, n - (+m[2])); b = n - 1; }
+        else { a = +m[1]; b = m[2] === '' ? n - 1 : Math.min(+m[2], n - 1); }
+        if (!(a <= b) || a >= n) return new Response(null, { status: 416, headers: { 'Content-Range': 'bytes */' + n } });
+        return new Response(buf.slice(a, b + 1), { status: 206, statusText: 'Partial Content', headers: {
+          'Content-Type': hit.headers.get('Content-Type') || 'audio/mpeg',
+          'Content-Length': String(b - a + 1),
+          'Content-Range': 'bytes ' + a + '-' + b + '/' + n,
+          'Accept-Ranges': 'bytes' } });
       });
-    });
-  }).then(function (res) {
-    if (!m || !res || res.status !== 200) return res;
-    return res.arrayBuffer().then(function (buf) {
-      var n = buf.byteLength, a, b;
-      if (m[1] === '') { a = Math.max(0, n - (+m[2])); b = n - 1; }
-      else { a = +m[1]; b = m[2] === '' ? n - 1 : Math.min(+m[2], n - 1); }
-      if (!(a <= b) || a >= n) return new Response(null, { status: 416, headers: { 'Content-Range': 'bytes */' + n } });
-      return new Response(buf.slice(a, b + 1), { status: 206, statusText: 'Partial Content', headers: {
-        'Content-Type': res.headers.get('Content-Type') || 'audio/mpeg',
-        'Content-Length': String(b - a + 1),
-        'Content-Range': 'bytes ' + a + '-' + b + '/' + n,
-        'Accept-Ranges': 'bytes' } });
     });
   }).catch(function () { return fetch(req); });
 }
@@ -60,7 +60,7 @@ self.addEventListener('fetch', function (e) {
   try { url = new URL(req.url); } catch (x) { return; }
   if (!aset(url)) return;               // selain aset statis: biarkan browser
   if (req.headers.has('range')) {         // audio/video range: biarkan, kecuali mp3 rk-*
-    if (url.origin === self.location.origin && /\/rk-[a-z0-9._-]+\.mp3$/i.test(url.pathname)) e.respondWith(potong(req, url));
+    if (url.origin === self.location.origin && /\/rk-[a-z0-9._-]+\.mp3$/i.test(url.pathname)) e.respondWith(potong(e, req, url));
     return;
   }
 
