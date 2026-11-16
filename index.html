@@ -1147,7 +1147,7 @@ function welcome(nama){
  }
  $('#wSp').innerHTML=s;
  w.className='on';
- wTimer=setTimeout(function w2(){if(window.RKVBUSY&&Date.now()-(window.RKVT0||0)<6500){wTimer=setTimeout(w2,300)}else endWelcome()},wMs());
+ wTimer=setTimeout(function w2(){if(window.RKVBUSY&&Date.now()-(window.RKVT0||0)<9500){wTimer=setTimeout(w2,300)}else endWelcome()},wMs());
 }
 function endWelcome(now){
  if(!wOn)return;wOn=false;clearTimeout(wTimer);
@@ -3843,7 +3843,7 @@ function jalan(){
  if(kd&&kand.indexOf(kd)<0)kand.push(kd);if(kand.indexOf('setia')<0)kand.push('setia');
  (function coba(i){if(i>=kand.length){say(s,nx);return}mp3('rk-nama-'+kand[i]+'.mp3',function(ok){if(ok)nx();else coba(i+1)},.12)})(0);
   },
-  function(nx){if(Date.now()-(window.RKVT0||0)>4500){nx();return}   /* PATCH: sudah lewat 4,5 dtk -> lewati kalimat penutup agar sambutan tidak lama/terpotong */
+  function(nx){if(Date.now()-(window.RKVT0||0)>6000){nx();return}   /* PATCH: sudah lewat 6 dtk -> lewati kalimat penutup agar sambutan tidak lama/terpotong */
    mp3(CFG.tutup,function(ok){if(ok)nx();else say('Selamat datang kembali di '+toko+'. Semoga hari Anda menyenangkan.',nx)},.3)}
  ],i=0;
  (function next(){
