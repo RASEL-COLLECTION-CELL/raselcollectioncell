@@ -3816,7 +3816,7 @@ function jalan(){
   var w1=s0.toLowerCase().replace(/[^a-z\u00C0-\u024F\s]/g,' ').replace(/\s+/g,' ').trim().split(' ')[0]||'',k1=g0?'':(ALIAS[slug(w1)]||slug(w1));
   if(nama&&(window.top!==window||window.RKPLAYER))window.top.postMessage({rk:1,t:'pre',files:['rk-nama-'+k0+'.mp3'].concat(k1&&k1!==k0?['rk-nama-'+k1+'.mp3']:[])},RK_ORIGIN_INDUK)}catch(e){}
  var S=[
-  function(nx){mp3(CFG.ting,function(ok){if(!ok){try{if(window.RKSND)RKSND.play('ok')}catch(e){}}setTimeout(nx,ok?100:250)})},
+  function(nx){mp3(CFG.ting,function(ok){if(!ok){try{if(window.RKSND)RKSND.play('ok')}catch(e){}}setTimeout(nx,ok?0:250)},.1)},
   function(nx){mp3(CFG.salam[wk],function(ok){if(ok)nx();else say('Selamat '+wk,nx)})},
   function(nx){
  if(!nama){nx();return}
