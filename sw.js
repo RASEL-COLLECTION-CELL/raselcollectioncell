@@ -1,7 +1,7 @@
 // Rasel Collection Cell - SW aman: hanya cache aset statis (gambar, audio, font).
 // HTML, JSON, script.google.com, dan semua non-GET TIDAK disentuh -> data selalu segar.
 // Naikkan VERSI setiap kali mengganti logo/ikon/suara agar cache lama dibuang.
-var VERSI = 'rcc-static-v3';
+var VERSI = 'rcc-static-v4';
 var MAX_ITEM = 200;
 var sedang = {};   // unduhan penuh mp3 yang sedang berjalan (cegah unduh ganda dari banyak permintaan Range)
 
