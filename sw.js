@@ -1,8 +1,9 @@
 // Rasel Collection Cell - SW v2: cache aset statis + AUDIO (termasuk permintaan Range).
 // HTML, JSON, script.google.com, dan semua non-GET TIDAK disentuh -> data selalu segar.
 // Naikkan VERSI setiap kali mengganti logo/ikon/suara agar cache lama dibuang.
-var VERSI = 'rcc-static-v2';
+var VERSI = 'rcc-static-v3';
 var MAX_ITEM = 120;
+var ISI = {};
 var AUDIO = /\.(mp3|m4a|aac|ogg|opus|wav)$/i;
 var STATIS = /\.(png|jpe?g|webp|gif|svg|ico|woff2?)$/i;
 
@@ -77,13 +78,15 @@ self.addEventListener('fetch', function (e) {
       caches.open(VERSI).then(function (c) {
         return c.match(key).then(function (hit) {
           if (hit) return rg ? potong(hit, rg) : hit;
-          return fetch(key).then(function (res) {
-            if (res && res.ok && res.status === 200) {
-              c.put(key, res.clone()).catch(function () {});
-              return rg ? potong(res, rg) : res;
-            }
-            return res;
-          });
+          // belum ada di cache: teruskan ke jaringan TANPA menunggu (tidak menambah telat),
+          // salinan penuh disimpan di latar belakang untuk pemutaran berikutnya
+          if (!ISI[key]) {
+            ISI[key] = 1;
+            fetch(key).then(function (res) {
+              if (res && res.ok && res.status === 200) return c.put(key, res);
+            }).catch(function () {}).then(function () { delete ISI[key]; });
+          }
+          return fetch(req);
         });
       }).catch(function () { return fetch(req); })
     );
