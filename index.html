@@ -1078,14 +1078,7 @@ catLook();
   $('#vLogin').classList.add('wk');
   var cr=cat.getBoundingClientRect(),kr=cd.getBoundingClientRect();
   D=Math.round(kr.top-cr.bottom+2);
-  var wd=Math.max(600,Math.round(D/SPD*1000)),pd=Math.round(OFF/3/SPD*1000),gap=300,i,t,fr=0,ly=0;
-  /* saat memegang kartu, posisi kucing dikunci ke posisi kartu yang sebenarnya di tiap frame */
-  var follow=function(){
-   var a=cat.getBoundingClientRect(),b=cd.getBoundingClientRect();
-   ly=Math.round((b.top+2-(a.bottom-ly))*10)/10;
-   cat.style.transform='translateY('+ly+'px)';
-   fr=requestAnimationFrame(follow);
-  };
+  var wd=Math.max(600,Math.round(D/SPD*1000)),pd=Math.round(OFF/3/SPD*1000),gap=300,i,t;
   cd.style.willChange='transform';cat.style.willChange='transform';
   var frz=function(v){var n=cat.querySelectorAll('.tail,.blink'),k;for(k=0;k<n.length;k++)n[k].style.animationPlayState=v};
   cat.classList.add('walk');
@@ -1093,20 +1086,23 @@ catLook();
   cat.style.transform='translateY('+D+'px)';
   cd.style.opacity='.4';
   /* sampai di kartu: tangan langsung memegang tepi kartu */
-  T(function(){cat.classList.remove('walk');cat.classList.add('tug');cat.style.transition='filter .6s';frz('paused');ly=D;fr=requestAnimationFrame(follow)},wd);
+  T(function(){cat.classList.remove('walk');cat.classList.add('tug');cat.style.transition='filter .6s';frz('paused')},wd);
   /* satu tarikan mulus: kucing diam memegang kartu, kartu naik perlahan tanpa jeda */
   t=wd+600;
   var pm=Math.round(OFF/PULL*1000);
   T(function(){
+   /* kartu & kucing: durasi, easing, dan jarak SAMA, dimulai di frame yang sama -> selisih posisi selalu tetap, tangan menempel */
    cd.style.transition='transform '+pm+'ms '+EP+',opacity '+pm+'ms '+EP;
+   cat.style.transition='transform '+pm+'ms '+EP+',filter .6s';
    cd.style.transform='translateY(0px)';
+   cat.style.transform='translateY('+(D-OFF)+'px)';
    cd.style.opacity='1';
   },t);
   t+=pm+gap;
   /* kucing berjalan naik kembali, kecepatan sama */
   var wu=Math.max(500,Math.round(Math.abs(D-OFF)/SPD*1000));
   T(function(){
-   cancelAnimationFrame(fr);frz('');cat.classList.remove('tug');
+   frz('');cat.classList.remove('tug');
    cat.style.transition='transform '+wu+'ms '+EZ+',filter .6s';
    cat.classList.add('walk');$('#vLogin').classList.remove('wk');
    cat.style.transform='';
