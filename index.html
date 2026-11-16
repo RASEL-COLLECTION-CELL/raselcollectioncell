@@ -5758,23 +5758,82 @@ window.RKERR=function(e){var s=o(e);try{if(localStorage.getItem('rkDebug')==='1'
 }catch(e){}})();
 </script>
 
-<!-- ===== RKSUARA v1 (ADD-ONLY): mencegah suara mp3 GitHub bertabrakan dengan suara HP. Tempel TEPAT SEBELUM </body>, setelah blok RKPWA. Hanya aktif di halaman GitHub mandiri (yang punya RKPLAYER). Hapus blok ini untuk membatalkan. ===== -->
+<!-- ===== RKSUARA v2 (ADD-ONLY): mp3 GitHub diputar lewat WebAudio (langsung bunyi, tanpa jeda antar-file) + mencegah tabrakan dengan suara HP. Tempel TEPAT SEBELUM </body>, setelah blok RKPWA. Hanya aktif di halaman GitHub mandiri (punya RKPLAYER). Jika buffer belum siap / WebAudio tidak jalan, pemutar lama RKPLAYER dipakai seperti biasa. Hapus blok ini untuk membatalkan. ===== -->
 <script>
 (function(){try{
 if(window.top!==window||!window.RKPLAYER)return;
 var ORG=(typeof RK_ORIGIN_INDUK!=='undefined'&&RK_ORIGIN_INDUK)||location.origin,SS=window.speechSynthesis,
-    BASE='https://rasel-collection-cell.github.io/raselcollectioncell/',st={id:null,s:0,t:0};
-/* s: 0 diam, 1 diminta tapi belum bunyi, 2 mp3 sedang bunyi */
-function stopMp3(){try{st.s=0;window.postMessage({rk:1,t:'stop'},ORG)}catch(e){}}
+    BASE='https://rasel-collection-cell.github.io/raselcollectioncell/',
+    AC=window.AudioContext||window.webkitAudioContext,
+    ctx=null,buf={},ing={},miss={},antri={},cur=null,liv=[],st={id:null,s:0,t:0};
+/* st.s: 0 diam, 1 diminta tapi belum bunyi, 2 mp3 sedang bunyi */
+function okFile(f){return /^rk-[a-z0-9._-]+\.mp3$/i.test(f)}
+function rep(o){try{window.postMessage(o,ORG)}catch(e){}}
 function aktif(){return st.s===2&&Date.now()-st.t<10000}
-/* lacak status pemutar dari pesan yang sudah ada (play / ack / res / stop) */
+function stopMp3(){try{st.s=0;window.postMessage({rk:1,t:'stop'},ORG)}catch(e){}}
+
+/* ---- WebAudio: dibuat setelah ada sentuhan (aturan Chrome) ---- */
+function unlock(){try{
+ if(!AC)return;
+ if(!ctx){ctx=new AC();for(var f in antri){if(antri.hasOwnProperty(f)){delete antri[f];ensure(f)}}}
+ if(ctx.state==='suspended')ctx.resume();
+}catch(e){}}
+['pointerdown','touchstart','keydown','click'].forEach(function(ev){document.addEventListener(ev,unlock,{passive:true,capture:true})});
+
+/* ---- ambil file (lewat service worker/cache), decode, simpan di memori ---- */
+function ensure(f){try{
+ if(!okFile(f)||buf[f]||ing[f]||miss[f])return;
+ var c=navigator.connection;if(c&&c.saveData)return;
+ if(!ctx){antri[f]=1;return}
+ ing[f]=1;
+ fetch(BASE+f).then(function(r){
+  if(r.status===404){miss[f]=1;throw 0}
+  if(!r.ok)throw 0;
+  return r.arrayBuffer();
+ }).then(function(ab){
+  return new Promise(function(ok,no){var p=ctx.decodeAudioData(ab,ok,no);if(p&&p.catch)p.catch(no)});
+ }).then(function(b){buf[f]=b;delete ing[f]}).catch(function(){delete ing[f]});
+}catch(e){}}
+
+/* ---- pemutaran ---- */
+function kill(me){try{me.done=true;clearTimeout(me.t);me.s.onended=null;me.s.stop(0)}catch(e){}
+ var i=liv.indexOf(me);if(i>=0)liv.splice(i,1)}
+function halt(){if(cur){var c=cur;cur=null;kill(c)}}
+function semua(){cur=null;var a=liv.slice(),i;for(i=0;i<a.length;i++)kill(a[i]);liv=[]}
+function mulai(d,f){
+ halt();
+ var b=buf[f],s=ctx.createBufferSource(),g=ctx.createGain(),v=+d.vol;
+ v=(v>0)?Math.min(1,v):.85;g.gain.value=v;s.buffer=b;s.connect(g);g.connect(ctx.destination);
+ var me={s:s,id:d.id,done:false,t:0},gap=+d.gap||0;
+ function fin(ok){if(me.done)return;me.done=true;clearTimeout(me.t);if(cur===me)cur=null;rep({rk:1,t:'res',id:d.id,ok:ok})}
+ s.onended=function(){var i=liv.indexOf(me);if(i>=0)liv.splice(i,1);fin(true)};
+ try{s.start(0)}catch(x){rep({rk:1,t:'res',id:d.id,ok:false});return}
+ cur=me;liv.push(me);st.s=2;st.t=Date.now();
+ try{if(SS&&SS.speaking)SS.cancel()}catch(x){}
+ rep({rk:1,t:'ack',id:d.id});
+ if(gap>0&&b.duration>gap)me.t=setTimeout(function(){fin(true)},Math.max(0,(b.duration-gap)*1000));
+}
+
+/* ---- pesan dari blok suara (fase capture: berjalan lebih dulu dari RKPLAYER) ---- */
 window.addEventListener('message',function(e){try{
  var d=e.data;if(!d||d.rk!==1||e.source!==window||e.origin!==ORG)return;
- if(d.t==='play'){st.id=d.id;st.s=1;st.t=Date.now()}
- else if(d.t==='ack'&&d.id===st.id){st.s=2;st.t=Date.now();try{if(SS&&SS.speaking)SS.cancel()}catch(x){}}
- else if((d.t==='res'&&d.id===st.id)||d.t==='stop'){st.s=0}
-}catch(x){}});
-/* suara HP: jika mp3 sudah bunyi, lewati; jika mp3 masih memuat, batalkan mp3 (suara HP yang menang) */
+ if(d.t==='pre'&&d.files){
+  for(var i=0;i<d.files.length&&i<4;i++)ensure(String(d.files[i]));
+  ensure('rk-nama-setia.mp3');return;
+ }
+ if(d.t==='stop'){semua();st.s=0;return}
+ if(d.t==='play'){
+  st.id=d.id;st.s=1;st.t=Date.now();
+  var f=String(d.file||'');if(!okFile(f))return;
+  if(miss[f]){e.stopImmediatePropagation();st.s=0;rep({rk:1,t:'res',id:d.id,ok:false});return}
+  if(buf[f]&&ctx&&ctx.state==='running'){e.stopImmediatePropagation();mulai(d,f);return}
+  ensure(f);return; /* belum siap: pemutar lama yang memutar */
+ }
+ if(d.t==='ack'&&d.id===st.id){st.s=2;st.t=Date.now();try{if(SS&&SS.speaking)SS.cancel()}catch(x){}}
+ else if(d.t==='res'&&d.id===st.id){st.s=0}
+}catch(x){}},true);
+
+/* ---- suara HP: mp3 sudah bunyi -> lewati; mp3 masih memuat -> batalkan mp3 (suara HP menang) ---- */
 if(SS&&typeof SS.speak==='function'&&!SS.rksuara){
  var sp=SS.speak.bind(SS);
  SS.speak=function(u){
@@ -5786,20 +5845,15 @@ if(SS&&typeof SS.speak==='function'&&!SS.rksuara){
  };
  SS.rksuara=1;
 }
-/* hangatkan cache service worker supaya mp3 langsung siap saat dipakai */
-var sudah={};
-function panas(f){try{
- if(!/^rk-[a-z0-9._-]+\.mp3$/i.test(f)||sudah[f])return;
- var c=navigator.connection;if(c&&c.saveData)return;
- if(!(navigator.serviceWorker&&navigator.serviceWorker.controller))return;
- sudah[f]=1;fetch(BASE+f).catch(function(){})
-}catch(e){}}
-window.addEventListener('message',function(e){try{
- var d=e.data;if(!d||d.rk!==1||e.source!==window||e.origin!==ORG||d.t!=='pre'||!d.files)return;
- for(var i=0;i<d.files.length&&i<4;i++)panas(String(d.files[i]));
-}catch(x){}});
-function awal(){setTimeout(function(){var h=new Date().getHours(),pw=h<4?'malam':h<11?'pagi':h<15?'siang':h<18?'sore':'malam';
- ['rk-100.mp3','rk-'+pw+'.mp3','rk-sambutan.mp3'].forEach(panas)},4000)}
+
+/* ---- muat lebih awal: yang pasti dipakai dulu, sisanya bertahap ---- */
+function awal(){setTimeout(function(){
+ var h=new Date().getHours(),pw=h<4?'malam':h<11?'pagi':h<15?'siang':h<18?'sore':'malam',
+  a=['rk-100.mp3','rk-'+pw+'.mp3','rk-sambutan.mp3','rk-nama-setia.mp3'],
+  b=['rk-login-gagal.mp3','rk-login-kunci.mp3','rk-login-blokir.mp3','rk-koneksi.mp3','rk-hadiah.mp3','rk-klaim.mp3','rk-event.mp3','rk-event-klaim.mp3','rk-pasang.mp3','rk-pasang-ok.mp3'],i;
+ a.forEach(ensure);
+ for(i=0;i<b.length;i++)(function(f,n){setTimeout(function(){ensure(f)},3000+n*1200)})(b[i],i);
+},1500)}
 if(document.readyState==='complete')awal();else window.addEventListener('load',awal);
 }catch(e){}})();
 </script>
