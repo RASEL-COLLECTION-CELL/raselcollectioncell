@@ -4,164 +4,6 @@
 <meta name="robots" content="noindex, nofollow">
 <meta charset="utf-8">
 <link rel="preconnect" href="https://rasel-collection-cell.github.io"> <!-- RSP: percepat video sambutan -->
-<!-- ===== RKAUDIO v1 (ADD-ONLY): preload & validasi semua audio umum saat splash, cache permanen (Cache Storage), status PENDING/DOWNLOADING/READY/FAILED, audio nama dipilih selektif setelah login. Versi audio: ganti VER di sini. Hapus blok ini untuk membatalkan. =====-->
-<script>
-(function(){try{
-if(window.RKAUDIO)return;
-var BASE='https://rasel-collection-cell.github.io/raselcollectioncell/',VER='1',CN='rcc-audio-'+VER,SETIA='rk-nama-setia.mp3';
-var h=new Date().getHours(),pw=h<4?'malam':h<11?'pagi':h<15?'siang':h<18?'sore':'malam';
-/* Audio umum yang benar-benar dipakai kode (hasil audit): ting, salam x4, sambutan, nama-setia, 8 suara RKVOICE, 2 suara pasang */
-var INTI=['rk-100.mp3','rk-'+pw+'.mp3','rk-sambutan.mp3',SETIA];
-var LOGIN=['rk-login-gagal.mp3','rk-login-kunci.mp3','rk-login-blokir.mp3','rk-koneksi.mp3'];
-var LAIN=['rk-hadiah.mp3','rk-klaim.mp3','rk-event.mp3','rk-event-klaim.mp3','rk-pasang.mp3','rk-pasang-ok.mp3'];
-var SALAM=['pagi','siang','sore','malam'].filter(function(x){return x!==pw}).map(function(x){return 'rk-'+x+'.mp3'});
-var UMUM=INTI.concat(LOGIN,LAIN,SALAM);
-var ST={},ERR={},MEM={},P={},TUNDA={},Q=[],aktifN=0,siapFlag=false,cbs=[];
-var kon=1;try{kon=((navigator.deviceMemory&&navigator.deviceMemory<=2)||(navigator.hardwareConcurrency&&navigator.hardwareConcurrency<=2))?1:2}catch(e){}
-UMUM.forEach(function(f){ST[f]='PENDING'});
-function sv(){try{var c=navigator.connection;return !!(c&&c.saveData)}catch(e){return false}}
-function okF(f){return typeof f==='string'&&f.length<=64&&f.indexOf('..')<0&&/^rk-[a-z0-9][a-z0-9._-]*\.mp3$/i.test(f)}
-function url(f){return BASE+f+'?v='+VER}
-function jeda(ms){return new Promise(function(ok){setTimeout(ok,ms)})}
-function CAC(){try{return self.caches?caches.open(CN):Promise.resolve(null)}catch(e){return Promise.resolve(null)}}
-/* validasi isi: ukuran wajar, panjang cocok dengan header, dan awalan MP3 (menolak halaman error berstatus 200) */
-function sahBuf(ab,res){try{
- if(!ab||ab.byteLength<512||ab.byteLength>8388608)return false;
- var cl=Number(res.headers.get('content-length'));
- if(cl>0&&!res.headers.get('content-encoding')&&cl!==ab.byteLength)return false;
- var u=new Uint8Array(ab,0,3);
- return (u[0]===0x49&&u[1]===0x44&&u[2]===0x33)||(u[0]===0xFF&&(u[1]&0xE0)===0xE0);
-}catch(e){return false}}
-function simpan(f,ab){
- return CAC().then(function(c){
-  if(!c){MEM[f]=ab.slice(0);return}
-  return c.put(url(f),new Response(ab.slice(0),{status:200,headers:{'Content-Type':'audio/mpeg','Content-Length':String(ab.byteLength),'X-RK-Ok':'1'}}))
-   .catch(function(){MEM[f]=ab.slice(0)});   /* kuota penuh: tetap bisa dipakai dari memori sesi ini */
- });
-}
-function cekCache(f){
- if(MEM[f])return Promise.resolve(true);
- return CAC().then(function(c){return c?c.match(url(f)):null}).then(function(r){
-  return !!(r&&r.headers.get('X-RK-Ok')==='1'&&Number(r.headers.get('content-length'))>=512);
- }).catch(function(){return false});
-}
-function baca(f){
- if(MEM[f])return Promise.resolve(MEM[f].slice(0));
- return CAC().then(function(c){return c?c.match(url(f)):null}).then(function(r){
-  return (r&&r.headers.get('X-RK-Ok')==='1')?r.arrayBuffer():null;
- }).then(function(ab){return ab&&ab.byteLength>=512?ab:null}).catch(function(){return null});
-}
-function jaringan(f){
- return new Promise(function(ok,no){
-  var ac=null,t;try{ac=window.AbortController?new AbortController():null}catch(e){}
-  t=setTimeout(function(){try{if(ac)ac.abort()}catch(e){}no({})},25000);
-  fetch(url(f),ac?{signal:ac.signal}:undefined).then(function(r){
-   if(r.status===404){clearTimeout(t);no({hilang:1});return}
-   if(r.status!==200)throw 0;
-   return r.arrayBuffer().then(function(ab){clearTimeout(t);if(sahBuf(ab,r))ok(ab);else no({})});
-  }).catch(function(){clearTimeout(t);no({})});
- });
-}
-/* maksimal 3 percobaan; offline -> ditunda sampai koneksi kembali (tidak menahan antrean) */
-function coba(f,n){
- return jaringan(f).then(function(ab){delete ERR[f];return simpan(f,ab).then(function(){return 'READY'})},function(e){
-  if(e&&e.hilang){ERR[f]='404';return 'FAILED'}
-  if(navigator.onLine===false){TUNDA[f]=1;return 'PENDING'}
-  if(n>=2){ERR[f]='gagal';return 'FAILED'}
-  return jeda(1500*(n+1)).then(function(){return coba(f,n+1)});
- });
-}
-function unduh(f){
- if(!okF(f))return Promise.resolve('FAILED');
- if(ST[f]==='READY')return Promise.resolve('READY');
- if(P[f])return P[f];
- ST[f]='DOWNLOADING';delete TUNDA[f];
- P[f]=cekCache(f).then(function(ada){return ada?'READY':coba(f,0)}).catch(function(){return 'FAILED'}).then(function(s){
-  ST[f]=s;delete P[f];periksa();return s;
- });
- return P[f];
-}
-function sel(){aktifN--;pompa();periksa()}
-function pompa(){while(aktifN<kon&&Q.length){var f=Q.shift();aktifN++;unduh(f).then(sel,sel)}}
-function antri(f,depan){
- if(!okF(f)||ST[f]==='READY'||ST[f]==='DOWNLOADING'||Q.indexOf(f)>=0)return;
- if(!ST[f])ST[f]='PENDING';
- if(depan)Q.unshift(f);else Q.push(f);
- pompa();
-}
-function target(){return sv()?INTI:UMUM}
-function periksa(){try{
- var d=target(),sisa=0,ok=0,i,s;
- for(i=0;i<d.length;i++){s=ST[d[i]];if(s==='READY')ok++;if(s==='DOWNLOADING'||(s==='PENDING'&&!TUNDA[d[i]]))sisa++}
- api.ready=(ok===d.length);
- if(!sisa&&!siapFlag){
-  siapFlag=true;api.siap=true;
-  cbs.splice(0).forEach(function(cb){try{cb()}catch(e){}});
-  try{window.dispatchEvent(new Event('rkaudio'))}catch(e){}
-  if(api.ready)bersih();
- }
-}catch(e){}}
-/* deteksi versi baru: cache audio versi lama dibuang hanya setelah versi sekarang lengkap */
-function bersih(){try{
- if(!self.caches)return;
- caches.keys().then(function(ks){return Promise.all(ks.filter(function(k){return k.indexOf('rcc-audio-')===0&&k!==CN}).map(function(k){return caches.delete(k)}))}).catch(function(){});
-}catch(e){}}
-function ulang(){
- Object.keys(ST).forEach(function(f){
-  if(TUNDA[f]||(ST[f]==='FAILED'&&ERR[f]==='gagal')){delete TUNDA[f];delete ERR[f];ST[f]='PENDING';antri(f)}
- });
- periksa();
-}
-try{window.addEventListener('online',ulang)}catch(e){}
-
-/* ---- audio nama pelanggan: dipilih SETELAH login, hanya file yang cocok ---- */
-function memoGet(kid){try{return JSON.parse(localStorage.getItem('rkAn:'+kid)||'null')}catch(e){return null}}
-function memoSet(kid,key,f){try{if(kid)localStorage.setItem('rkAn:'+kid,JSON.stringify({k:key,f:f,t:Date.now()}))}catch(e){}}
-function nama(files){try{
- var c=[],kid='',key,m,i;
- (files||[]).slice(0,3).forEach(function(f){if(okF(f)&&f!==SETIA&&c.indexOf(f)<0)c.push(f)});
- try{var d=window.RCC&&RCC.d&&RCC.d();kid=(d&&/^[0-9a-f]{16}$/.test(String(d.kid||'')))?String(d.kid):''}catch(e){}
- key=c.join('|');
- m=kid?memoGet(kid):null;
- /* pemetaan per ID pelanggan (kid); dianggap usang bila nama di sheet berubah, atau (jika dulu jatuh ke "setia") sudah lewat 12 jam */
- if(m&&m.k===key&&okF(m.f)&&(m.f!==SETIA||Date.now()-(m.t||0)<43200000)){
-  for(i=0;i<c.length;i++)if(c[i]!==m.f)ERR[c[i]]='404';   /* tidak perlu menebak ulang */
-  antri(m.f,true);return;
- }
- (function p(i){
-  if(i>=c.length){memoSet(kid,key,SETIA);antri(SETIA,true);return}
-  unduh(c[i]).then(function(s){
-   if(s==='READY'){memoSet(kid,key,c[i]);return}
-   if(ERR[c[i]]==='404')p(i+1);else antri(SETIA,true);   /* gagal jaringan: jangan simpan pemetaan, pakai cadangan */
-  });
- })(0);
-}catch(e){}}
-
-var api={
- ver:VER,siap:false,ready:false,
- url:function(f){return okF(f)?url(f):BASE+f},
- ada:function(f){return ST[f]==='READY'},
- hilang:function(f){return ERR[f]==='404'},
- status:function(f){return f?(ST[f]||'PENDING'):(function(){var o={PENDING:0,DOWNLOADING:0,READY:0,FAILED:0};Object.keys(ST).forEach(function(k){o[ST[k]]++});return o})()},
- daftar:function(){return UMUM.slice()},
- onSiap:function(cb){if(siapFlag){try{cb()}catch(e){}}else cbs.push(cb)},
- ambil:function(f){
-  if(!okF(f))return Promise.resolve(null);
-  return baca(f).then(function(ab){
-   if(ab)return ab;
-   if(ERR[f]==='404')return null;
-   if(sv()&&INTI.indexOf(f)<0&&!ST[f])return null;   /* hemat data: tidak mengunduh sendiri file non-inti */
-   return unduh(f).then(function(s){return s==='READY'?baca(f):null});
-  });
- },
- nama:nama
-};
-window.RKAUDIO=api;
-try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist()}catch(e){}   /* minta penyimpanan permanen (tanpa dialog di Chrome) */
-setTimeout(function(){target().forEach(function(f){antri(f)});periksa()},0);
-}catch(e){}})();
-</script>
-
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#0F2A5F">
 <link rel="manifest" href="manifest.json">
@@ -899,7 +741,7 @@ var RSP_VIDEO="https://rasel-collection-cell.github.io/raselcollectioncell/anak.
       setTimeout(function(){muat.style.display='none';stopLangit();lepas();try{if(vid)vid.pause()}catch(e){}},450);
     },120);
   }
-  setTimeout(function(){var t0=Date.now();(function tunggu(){if(done)return;var A=window.RKAUDIO;if(!A||A.siap||Date.now()-t0>=9000)tutup();else setTimeout(tunggu,250)})()},5000);   /* layar pembuka ~5 detik; diperpanjang maks +9 dtk sampai audio umum selesai disiapkan */
+  setTimeout(tutup,5000);   /* layar pembuka tampil ~5 detik */
   setTimeout(tutup,45000);
 })();
 }catch(e){window.__rspErr=String(e);var m=document.getElementById("rsp");if(m&&m.parentNode)m.parentNode.removeChild(m)}})();
@@ -1078,6 +920,8 @@ document.addEventListener('keydown',ky);
  window.google={script:{run:mk(null,null)}};
 }catch(e){}})();
 window.RKERR=function(e){var k=e&&e.kode;return k==='server'?'Server sedang bermasalah. Coba lagi sebentar lagi.':k==='waktu'?'Server lambat merespons. Coba lagi.':'Koneksi bermasalah. Coba lagi.'};
+/* PATCH suara: true = SEMUA suara hanya memakai rekaman mp3 Anda; suara robot HP (TTS) tidak pernah dipakai. Jika file mp3 tidak ada/gagal dimuat, bagian itu dilewati tanpa suara. Ubah ke false untuk mengembalikan cadangan suara HP. */
+window.RK_TANPA_ROBOT=true;
 var RK_ORIGIN_INDUK=(window.top===window&&location.origin&&location.origin!=='null')?location.origin:'https://rasel-collection-cell.github.io';/* satu-satunya halaman induk yang boleh menerima/mengirim pesan suara */</script>
 <script>
 (function(){
@@ -1303,7 +1147,7 @@ function welcome(nama){
  }
  $('#wSp').innerHTML=s;
  w.className='on';
- wTimer=setTimeout(function w2(){if(window.RKVBUSY&&Date.now()-(window.RKVT0||0)<10000){wTimer=setTimeout(w2,300)}else endWelcome()},wMs());
+ wTimer=setTimeout(function w2(){if(window.RKVBUSY&&Date.now()-(window.RKVT0||0)<6500){wTimer=setTimeout(w2,300)}else endWelcome()},wMs());
 }
 function endWelcome(now){
  if(!wOn)return;wOn=false;clearTimeout(wTimer);
@@ -1391,7 +1235,9 @@ var SB_URL='https://fvkfxhzhujtqxzuzsxmv.supabase.co',SB_KEY='sb_publishable_fLr
 function sbOn(){return !!(SB_URL&&SB_KEY&&window.fetch)}
 function sbRpc(fn,args){
  var h={'Content-Type':'application/json',apikey:SB_KEY};if(/^eyJ/.test(SB_KEY))h.Authorization='Bearer '+SB_KEY;
- return fetch(SB_URL+'/rest/v1/rpc/'+fn,{method:'POST',headers:h,body:JSON.stringify(args)}).then(function(r){if(!r.ok)throw new Error('http '+r.status);return r.json()});
+ /* PATCH koneksi: batas 7 detik. Supabase lambat/diblokir -> gagal cepat, login otomatis lanjut lewat Apps Script */
+ var ac=window.AbortController?new AbortController():null,tm=ac?setTimeout(function(){try{ac.abort()}catch(x){}},7000):0;
+ return fetch(SB_URL+'/rest/v1/rpc/'+fn,{method:'POST',headers:h,body:JSON.stringify(args),signal:ac?ac.signal:undefined}).then(function(r){clearTimeout(tm);if(!r.ok)throw new Error('http '+r.status);return r.json()},function(e){clearTimeout(tm);throw e});
 }
 function cekS(tok,src,ok,fail){
  if(src==='sb')sbRpc('sb_dasbor',{p_token:tok}).then(function(d){if(d&&d.status==='ok')d.token=tok;ok(d)}).catch(function(){fail()});
@@ -1413,7 +1259,7 @@ function login(e){
  if(!(sbOn()&&idOk(l5))){viaGS();return}
  sbRpc('sb_login',{p_rid:l5,p_pin:pin}).then(function(r){
   if(r&&r.status==='ok'){return sbRpc('sb_dasbor',{p_token:r.token}).then(function(d){if(d&&d.status==='ok'){d.token=r.token;S.src='sb';suksesLogin(d)}else viaGS()})}
-  if(r&&(r.status==='locked'||r.status==='blocked'||r.status==='invalid')){S.src='gs';suksesLogin(r);return}
+  if(r&&(r.status==='locked'||r.status==='blocked'||r.status==='invalid'||(r.final===true&&r.status!=='ok'))){S.src='gs';suksesLogin(r);return}   /* r.final===true: server Supabase menyatakan hasil sudah pasti (mis. PIN salah pada akun yang sudah sinkron), tidak perlu bertanya ke Apps Script */
   viaGS();   /* migrasi / belum tersinkron / PIN salah: Apps Script yang memutuskan (dan memigrasi PIN bila benar) */
  }).catch(function(){viaGS()});
 }
@@ -1423,12 +1269,13 @@ function suksesLogin(r){
  if(!r||r.status!=='ok'){
   var m=(r&&(MSG[r.status]||r.pesan))||'Terjadi gangguan. Coba lagi beberapa saat lagi.';
   shake('#fLogin');toast(m,'err');try{if(window.RKLOGINV&&r)RKLOGINV(r.status)}catch(x){}waGagalLogin(S.l5,m);if(r&&r.status==='notfound')$('#pin').value='';return}
+ try{if(window.RKPRE)RKPRE(r)}catch(x){}   /* PATCH suara: rekaman nama mulai dimuat begitu data login tiba */
  rkSimpanKredensial(S.l5,S.pin);waReset();S.l5=S.pin='';$('#pin').value='';S.tok=r.token||'';S.d=r;render(true);show('#vDash');lastPing=lastSave=Date.now();
  welcome(r.nama);
  if(r.baru>0)setTimeout(function(){confetti();toast('Selamat! '+r.baru+' hadiah baru untuk Anda.','ok')},wMs()+500);
  arm();
 }
-function gagal(err){busy(false);loading(false);toast('Koneksi bermasalah. Periksa internet Anda lalu coba lagi.','err')}
+function gagal(err){busy(false);loading(false);var k=err&&err.kode,m=((k==='server'||k==='waktu')&&window.RKERR)?RKERR(err):'Koneksi bermasalah. Periksa internet Anda lalu coba lagi.';toast(m,'err')}
 
 /* render */
 function render(first){
@@ -1597,6 +1444,7 @@ function rkSimpanKredensial(id,pin){
 function arm(){
  if(!S.d)return;
  var n=Date.now();S.act=n;clearTimeout(S.idle);S.idle=setTimeout(expire,pend()?IDLE*4:IDLE);
+ clearTimeout(S.warnT);S.warnT=setTimeout(function(){if(S.d&&!document.hidden)toast('Sesi akan berakhir sebentar lagi. Ketuk layar agar tetap masuk.')},(pend()?IDLE*4:IDLE)-20000);   /* PATCH: peringatan 20 dtk sebelum keluar otomatis */
  if(n-lastSave>3000){lastSave=n;simpan()}
  if(n-lastPing>60000&&S.tok&&GS){lastPing=n;pingS(S.tok,S.src,function(r){if(r&&r.status==='expired'&&S.d)expire()})}
 }
@@ -3939,7 +3787,7 @@ function say(text,cb){
  var done=false,t;
  function fn(){if(done)return;done=true;clearTimeout(t);cb()}
  try{
-  if(!SS||typeof SpeechSynthesisUtterance==='undefined'||!text){fn();return}
+  if(window.RK_TANPA_ROBOT||!SS||typeof SpeechSynthesisUtterance==='undefined'||!text){fn();return}
   var u=new SpeechSynthesisUtterance(text);
   u.lang='id-ID';if(voice)u.voice=voice;u.rate=CFG.rate;u.pitch=1.05;u.volume=1;
   u.onend=fn;u.onerror=fn;
@@ -3957,6 +3805,15 @@ var ALIAS={
  'denis':'kaka-denis','kaka-denis':'kaka-denis',
  'rahmt-hidayat':'bapak-rahmt-hidayat','rahmat-hidayat':'bapak-rahmt-hidayat','bapak-rahmt-hidayat':'bapak-rahmt-hidayat','bapak-rahmat-hidayat':'bapak-rahmt-hidayat'
 };
+/* PATCH suara: dipanggil saat respons login tiba agar rekaman nama sudah siap sebelum gilirannya */
+window.RKPRE=function(d){try{
+ if(!d||!d.nama||(window.top===window&&!window.RKPLAYER))return;
+ var s0=String(d.namaSuara||'').trim()||String(d.nama),g0=/^pelanggan\s*\d+$/i.test(s0),
+  br=function(x){return x.toLowerCase().replace(/[^a-z\u00C0-\u024F\s]/g,' ').replace(/\s+/g,' ').trim()},
+  b0=br(s0),k0=g0?'setia':(ALIAS[slug(b0)]||slug(b0)),w1=b0.split(' ')[0]||'',k1=g0?'':(ALIAS[slug(w1)]||slug(w1)),f=['rk-nama-'+k0+'.mp3'];
+ if(k1&&k1!==k0)f.push('rk-nama-'+k1+'.mp3');
+ window.top.postMessage({rk:1,t:'pre',files:f},RK_ORIGIN_INDUK);
+}catch(e){}};
 function waktu(){
  var g=txt('wGreet').toLowerCase(),m=/pagi|siang|sore|malam/.exec(g);
  if(m)return m[0];
@@ -3986,7 +3843,8 @@ function jalan(){
  if(kd&&kand.indexOf(kd)<0)kand.push(kd);if(kand.indexOf('setia')<0)kand.push('setia');
  (function coba(i){if(i>=kand.length){say(s,nx);return}mp3('rk-nama-'+kand[i]+'.mp3',function(ok){if(ok)nx();else coba(i+1)},.12)})(0);
   },
-  function(nx){mp3(CFG.tutup,function(ok){if(ok)nx();else say('Selamat datang kembali di '+toko+'. Semoga hari Anda menyenangkan.',nx)},.3)}
+  function(nx){if(Date.now()-(window.RKVT0||0)>4500){nx();return}   /* PATCH: sudah lewat 4,5 dtk -> lewati kalimat penutup agar sambutan tidak lama/terpotong */
+   mp3(CFG.tutup,function(ok){if(ok)nx();else say('Selamat datang kembali di '+toko+'. Semoga hari Anda menyenangkan.',nx)},.3)}
  ],i=0;
  (function next(){
   if(my!==tok||muted())return;
@@ -4676,10 +4534,10 @@ var M={
  klaim:{file:'rk-klaim.mp3',text:'Klaim berhasil. Tunjukkan layar ini ke kasir.'},
  event:{file:'rk-event.mp3',text:'Syarat event terpenuhi! Tekan Klaim hadiah saya sebelum event berakhir.'},
  evklaim:{file:'rk-event-klaim.mp3',text:'Klaim hadiah event berhasil. Tunjukkan layar ini ke kasir.'},
- lgagal:{file:'rk-login-gagal.mp3',text:'Maaf, ID atau PIN belum cocok. Coba periksa lagi ya.'},
- lkunci:{file:'rk-login-kunci.mp3',text:'Login dikunci sementara. Tunggu beberapa menit, atau hubungi kasir.'},
- lblok:{file:'rk-login-blokir.mp3',text:'Akun Anda sedang diblokir. Silakan hubungi kasir.'},
- lkoneksi:{file:'rk-koneksi.mp3',text:'Koneksi bermasalah. Periksa internet Anda, lalu coba lagi.'}
+ lgagal:{vol:.6,file:'rk-login-gagal.mp3',text:'Maaf, ID atau PIN belum cocok. Coba periksa lagi ya.'},
+ lkunci:{vol:.6,file:'rk-login-kunci.mp3',text:'Login dikunci sementara. Tunggu beberapa menit, atau hubungi kasir.'},
+ lblok:{vol:.6,file:'rk-login-blokir.mp3',text:'Akun Anda sedang diblokir. Silakan hubungi kasir.'},
+ lkoneksi:{vol:.6,file:'rk-koneksi.mp3',text:'Koneksi bermasalah. Periksa internet Anda, lalu coba lagi.'}
 };
 var lastLogin=0;
 function pick(){try{if(!SS)return;var v=SS.getVoices()||[],i;voice=null;for(i=0;i<v.length;i++){if(/^id([-_]|$)/i.test(v[i].lang)){voice=v[i];break}}}catch(e){}}
@@ -4694,16 +4552,16 @@ window.addEventListener('message',function(e){try{
  else if(d.t==='res')fin(d.id,!!d.ok);
 }catch(x){}});
 function fin(id,ok){var p=pend[id];if(!p)return;delete pend[id];clearTimeout(p.t1);clearTimeout(p.t2);p.cb(ok)}
-function mp3(file,cb){
+function mp3(file,cb,vol){
  if(window.top===window&&!window.RKPLAYER){cb(false);return}
  var id=++seq;pend[id]={cb:cb};
  pend[id].t1=setTimeout(function(){fin(id,false)},3000);
- try{window.top.postMessage({rk:1,t:'play',id:id,file:file,vol:.85},RK_ORIGIN_INDUK)}catch(e){fin(id,false)}
+ try{window.top.postMessage({rk:1,t:'play',id:id,file:file,vol:vol||.85},RK_ORIGIN_INDUK)}catch(e){fin(id,false)}
 }
 function say(text,cb){
  var done=false,t;function fn(){if(done)return;done=true;clearTimeout(t);cb()}
  try{
-  if(!SS||typeof SpeechSynthesisUtterance==='undefined'){fn();return}
+  if(window.RK_TANPA_ROBOT||!SS||typeof SpeechSynthesisUtterance==='undefined'){fn();return}
   var u=new SpeechSynthesisUtterance(text);u.lang='id-ID';if(voice)u.voice=voice;u.rate=.95;u.pitch=1.05;u.volume=1;
   u.onend=fn;u.onerror=fn;t=setTimeout(fn,9000);SS.speak(u);
  }catch(e){fn()}
@@ -4728,7 +4586,7 @@ function bicara(k,el){
    if(ok){speaking=false;return}
    if(muted()){speaking=false;return}
    say(m.text,function(){speaking=false});
-  });
+  },m.vol);
  })();
 }
 /* dipanggil langsung oleh halaman login (tidak bergantung pada tulisan toast) */
@@ -4838,7 +4696,7 @@ function pick(){try{if(!SS)return;var l=SS.getVoices()||[],i;voice=null;for(i=0;
 pick();try{if(SS&&SS.addEventListener)SS.addEventListener('voiceschanged',pick)}catch(e){}
 var FL={run:'rk-pasang.mp3',ok:'rk-pasang-ok.mp3'},seq=0,pend={},late={};
 function say(t){try{
- if(muted()||!SS||typeof SpeechSynthesisUtterance==='undefined')return;
+ if(window.RK_TANPA_ROBOT||muted()||!SS||typeof SpeechSynthesisUtterance==='undefined')return;
  var u=new SpeechSynthesisUtterance(t);u.lang='id-ID';if(voice)u.voice=voice;u.rate=.95;u.pitch=1.05;u.volume=1;
  SS.cancel();SS.speak(u);
 }catch(e){}}
@@ -5703,7 +5561,7 @@ var BASE='https://rasel-collection-cell.github.io/raselcollectioncell/',cache={}
 function reply(o){try{window.postMessage(o,RK_ORIGIN_INDUK)}catch(e){}}
 function get(f){
  f=String(f||'');if(!/^rk-[a-z0-9._-]+\.mp3$/i.test(f))return null;
- if(!cache[f]){var a=new Audio();a.preload='auto';a.src=(window.RKAUDIO?RKAUDIO.url(f):BASE+f);cache[f]=a}
+ if(!cache[f]){var a=new Audio();a.preload='auto';a.src=BASE+f;cache[f]=a}
  return cache[f];
 }
 function halt(){
@@ -5733,7 +5591,7 @@ window.addEventListener('message',function(e){try{
 }catch(x){}});
 /* muat lebih awal file yang pasti dipakai */
 (function(){var h=new Date().getHours(),pw=h<4?'malam':h<11?'pagi':h<15?'siang':h<18?'sore':'malam',ls=['rk-100.mp3','rk-'+pw+'.mp3','rk-sambutan.mp3'];
- var go=function(){try{var c=navigator.connection;if(c&&c.saveData)return}catch(e){}if(window.RKAUDIO)RKAUDIO.onSiap(function(){ls.forEach(get)});else ls.forEach(get)};
+ var go=function(){try{var c=navigator.connection;if(c&&c.saveData)return}catch(e){}ls.forEach(get)};
  if(document.readyState==='complete')setTimeout(go,6000);else window.addEventListener('load',function(){setTimeout(go,6000)})})();
 }catch(e){}})();
 </script>
@@ -5901,7 +5759,7 @@ function reg(){try{
  if(location.protocol!=='https:'&&location.hostname!=='localhost')return;
  navigator.serviceWorker.register('sw.js').catch(function(){});
 }catch(e){}}
-if(D.readyState==='complete')setTimeout(reg,300);else W.addEventListener('load',function(){setTimeout(reg,300)});
+if(D.readyState==='complete')setTimeout(reg,3000);else W.addEventListener('load',function(){setTimeout(reg,3000)});
 }catch(e){}})();
 </script>
 <!-- ===== RKDX v1 (ADD-ONLY): alat cek galat server. Buka halaman dengan #rkdebug di ujung alamat -> pesan galat menampilkan nama fungsi dan alasan dari server; #rkdebugoff untuk mematikan. Tanpa itu, tampilan pelanggan tidak berubah. ===== -->
@@ -5941,14 +5799,14 @@ function unlock(){try{
 /* ---- ambil file (lewat service worker/cache), decode, simpan di memori ---- */
 function ensure(f){try{
  if(!okFile(f)||buf[f]||ing[f]||miss[f])return;
- var c=navigator.connection;if(c&&c.saveData&&!(window.RKAUDIO&&RKAUDIO.ada(f)))return;
+ var c=navigator.connection;if(c&&c.saveData)return;
  if(!ctx){antri[f]=1;return}
  ing[f]=1;
- (window.RKAUDIO?RKAUDIO.ambil(f).then(function(ab){if(!ab){if(RKAUDIO.hilang(f))miss[f]=1;throw 0}return ab}):fetch(BASE+f).then(function(r){
+ fetch(BASE+f).then(function(r){
   if(r.status===404){miss[f]=1;throw 0}
   if(!r.ok)throw 0;
   return r.arrayBuffer();
- })).then(function(ab){
+ }).then(function(ab){
   return new Promise(function(ok,no){var p=ctx.decodeAudioData(ab,ok,no);if(p&&p.catch)p.catch(no)});
  }).then(function(b){buf[f]=b;delete ing[f]}).catch(function(){delete ing[f]});
 }catch(e){}}
@@ -5976,7 +5834,6 @@ function mulai(d,f){
 window.addEventListener('message',function(e){try{
  var d=e.data;if(!d||d.rk!==1||e.source!==window||e.origin!==ORG)return;
  if(d.t==='pre'&&d.files){
-  try{if(window.RKAUDIO)RKAUDIO.nama(d.files)}catch(x){}   /* audio nama: pilih & unduh hanya file milik pelanggan ini */
   for(var i=0;i<d.files.length&&i<4;i++)ensure(String(d.files[i]));
   ensure('rk-nama-setia.mp3');return;
  }
@@ -5984,7 +5841,7 @@ window.addEventListener('message',function(e){try{
  if(d.t==='play'){
   st.id=d.id;st.s=1;st.t=Date.now();
   var f=String(d.file||'');if(!okFile(f))return;
-  if(miss[f]||(window.RKAUDIO&&RKAUDIO.hilang(f))){e.stopImmediatePropagation();st.s=0;rep({rk:1,t:'res',id:d.id,ok:false});return}
+  if(miss[f]){e.stopImmediatePropagation();st.s=0;rep({rk:1,t:'res',id:d.id,ok:false});return}
   if(buf[f]&&ctx&&ctx.state==='running'){e.stopImmediatePropagation();mulai(d,f);return}
   ensure(f);return; /* belum siap: pemutar lama yang memutar */
  }
