@@ -5333,7 +5333,7 @@ setTimeout(function(){try{new Image().src='https://rasel-collection-cell.github.
 .evled-trk .g{visibility:hidden}
 /* nilai chip tidak berkedip (tetap terbaca); kupu-kupu nyaris tak terlihat di tab Event */
 .evled-chip b{animation:none}
-body:has(#vDash[data-rkt=event]) #bf .bfl{opacity:.16}
+body.rkev #bf .bfl{opacity:.16}
 /* Riwayat: nama produk jadi lencana yang jelas */
 #hist .tx .a small{display:flex;flex-wrap:wrap;align-items:center;gap:2px 8px;margin-top:3px}
 #hist .tx .a small .rkpr{display:inline-block;max-width:100%;padding:2px 9px;border-radius:99px;font:800 12px/1.35 var(--f);color:#6b4600;background:linear-gradient(135deg,#FFF1BF,#F6D675);border:1px solid rgba(200,148,43,.55);overflow-wrap:anywhere}
@@ -5347,6 +5347,8 @@ body:has(#vDash[data-rkt=event]) #bf .bfl{opacity:.16}
 /* Menu bawah: label tidak berdesakan di HP sempit; titik Event disembunyikan bila sudah dilihat */
 /* Zoom dikunci di semua mode (HP, desktop, layar lebar): cubit-zoom dimatikan, scroll tetap jalan */
 html,body{touch-action:pan-x pan-y}
+/* Penghemat scroll: animasi dekoratif dijeda selama layar digulir (otomatis lanjut 0,2 detik setelah berhenti) */
+html.rkscr *,html.rkscr *::before,html.rkscr *::after{animation-play-state:paused!important}
 /* Mode desktop / layar lebar: bingkai lebih lebar & menu bawah ikut, tidak jadi kolom sempit */
 @media (min-width:700px){.app{max-width:640px}#rkNav{max-width:600px}#rkNav button{font-size:13px}#rkNav svg{width:25px;height:25px}}
 @media (min-width:1000px){.app{max-width:720px}#rkNav{max-width:660px}}
@@ -5358,6 +5360,10 @@ html,body{touch-action:pan-x pan-y}
 (function(){try{
 var D=document,v=D.getElementById('vDash'),nav=D.getElementById('rkNav');
 if(!v||!nav)return;
+/* jeda animasi saat scroll */
+var RT=D.documentElement,st=0,on=false;
+function sc(){if(!on){on=true;RT.classList.add('rkscr')}clearTimeout(st);st=setTimeout(function(){on=false;RT.classList.remove('rkscr')},200)}
+window.addEventListener('scroll',sc,{passive:true,capture:true});
 /* iOS Safari mengabaikan user-scalable: blok gestur zoom */
 ['gesturestart','gesturechange','gestureend'].forEach(function(n){D.addEventListener(n,function(e){e.preventDefault()},{passive:false})});
 /* ikon Promo: megafon (beda dari kertas struk Riwayat) */
@@ -5373,6 +5379,7 @@ function sync(){
  var b=nav.querySelector('[data-t=event]');if(!b)return;
  var s=sg(),seen=mem!==null?mem:rd();
  if(v.getAttribute('data-rkt')==='event'&&s){mem=s;wr(s);seen=s}
+ D.body.classList.toggle('rkev',v.getAttribute('data-rkt')==='event');
  b.classList.toggle('rkseen',!s||s===seen);
 }
 /* riwayat: pisahkan "tanggal · produk" agar produk tampil sebagai lencana */
