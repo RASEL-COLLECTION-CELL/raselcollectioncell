@@ -4059,7 +4059,7 @@ function blast(){
   }
   tm(function(){try{var q=ov.querySelectorAll('.rkp-p'),j;for(j=0;j<q.length;j++)q[j].remove()}catch(e){}},1000);
   if(h){h.classList.remove('on');h.classList.add('h')}
-  say('Taraa! Rasel muncul dari kotak!');
+  say('');
   var n2=count(),k=0,L;
   if(n2===1)k=0;else{do{k=Math.floor(Math.random()*LN.length)}while(k===lastI&&LN.length>1)}
   lastI=k;L=LN[k];
@@ -5118,7 +5118,7 @@ function es(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return
 function tk(){try{return(window.RCC&&RCC.tok&&RCC.tok())||''}catch(e){return''}}
 function say(m,t){try{var h=$i('toasts');if(!h)return;var d=document.createElement('div');d.className='toast '+(t||'');d.innerHTML='<span>'+es(m)+'</span>';h.appendChild(d);setTimeout(function(){d.classList.add('bye');setTimeout(function(){d.remove()},350)},3800)}catch(e){}}
 function ld(on){try{var l=$i('ld');if(l)l.classList.toggle('on',on)}catch(e){}}
-function coin(){return '<svg viewBox="0 0 40 40" aria-hidden="true"><defs><linearGradient id="rkkg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFF1B8"/><stop offset=".5" stop-color="#F2C14E"/><stop offset="1" stop-color="#B8841F"/></linearGradient></defs><circle cx="20" cy="20" r="19" fill="url(#rkkg)" stroke="#9C7420" stroke-width="1.2"/><circle cx="20" cy="20" r="15" fill="none" stroke="#8A6414" stroke-opacity=".55" stroke-width="1" stroke-dasharray="2 1.6"/><path d="M20 8l1.5 3 3.3.5-2.4 2.3.6 3.3-3-1.6-3 1.6.6-3.3-2.4-2.3 3.3-.5z" fill="#8A6414" opacity=".8"/><text x="20" y="27" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="8" font-weight="900" letter-spacing=".3" fill="#5A3E05">RASEL</text><path d="M9 14a13 13 0 0 1 9-7" stroke="#fff" stroke-opacity=".7" stroke-width="2" fill="none" stroke-linecap="round"/></svg>'}
+function coin(){return '<svg viewBox="-4 -4 108 108" aria-hidden="true" style="overflow:visible"><defs><linearGradient id="rkcnG1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFF6C9"/><stop offset=".35" stop-color="#F7CF5C"/><stop offset=".7" stop-color="#C8942B"/><stop offset="1" stop-color="#FFE9A6"/></linearGradient><linearGradient id="rkcnG2" x1="1" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#FFF0B0"/><stop offset=".5" stop-color="#D9A53A"/><stop offset="1" stop-color="#9A6A12"/></linearGradient><radialGradient id="rkcnF" cx=".5" cy=".35" r=".75"><stop offset="0" stop-color="#FFF1F5"/><stop offset=".6" stop-color="#BFD9FF"/><stop offset="1" stop-color="#7FA9F0"/></radialGradient><linearGradient id="rkcnS" x1="0" x2="1" y1="0" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".85"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient><clipPath id="rkcnC"><circle cx="50" cy="50" r="38"/></clipPath><clipPath id="rkcnO"><circle cx="50" cy="50" r="49"/></clipPath><path id="rkcnA" d="M9 50A41 41 0 0 1 91 50"/><path id="rkcnB" d="M3 50A47 47 0 0 0 97 50"/></defs><circle cx="50" cy="50" r="49" fill="url(#rkcnG1)"/><circle cx="50" cy="50" r="45.5" fill="none" stroke="#8A5A0A" stroke-opacity=".5" stroke-width="1" stroke-dasharray="1.4 2.2"/><circle cx="50" cy="50" r="39.5" fill="url(#rkcnG2)"/><circle cx="50" cy="50" r="38" fill="url(#rkcnF)"/><g clip-path="url(#rkcnC)"><image href="'+(window.RKG_URL||'')+'" x="13" y="12" width="74" height="124" preserveAspectRatio="xMidYMin slice"/></g><text font-family="Georgia,serif" font-size="9" font-weight="800" letter-spacing="2.2" fill="#5B3A00" stroke="#FFF3B8" stroke-width=".35" paint-order="stroke"><textPath href="#rkcnA" startOffset="50%" text-anchor="middle">RASEL</textPath></text><text font-family="Georgia,serif" font-size="5.5" font-weight="700" letter-spacing="1.6" fill="#5B3A00"><textPath href="#rkcnB" startOffset="50%" text-anchor="middle">COLLECTION</textPath></text><g clip-path="url(#rkcnO)"><rect class="rkcn-sw" x="-40" y="-10" width="28" height="120" fill="url(#rkcnS)"/></g><g transform="translate(96 6)"><path class="rkcn-st" d="M0-7 1.8-1.8 7 0 1.8 1.8 0 7-1.8 1.8-7 0-1.8-1.8Z" fill="#FFF8D6"/></g><g transform="translate(4 22)"><path class="rkcn-st b" d="M0-7 1.8-1.8 7 0 1.8 1.8 0 7-1.8 1.8-7 0-1.8-1.8Z" fill="#FFF8D6"/></g><g transform="translate(92 94)"><path class="rkcn-st c" d="M0-7 1.8-1.8 7 0 1.8 1.8 0 7-1.8 1.8-7 0-1.8-1.8Z" fill="#FFF8D6"/></g></svg>'}
 function burst(){try{
  if(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)return;
  var b=$i('rkKoinBtn'),r=b?b.getBoundingClientRect():{left:innerWidth/2,top:innerHeight/2,width:0,height:0},
@@ -5483,46 +5483,16 @@ setInterval(function(){if(!D.hidden)sync()},2000);
 }catch(e){}})();
 </script>
 <style id="rk-coin">
-#vDash .card3d #atm .stats>div{display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:6px;align-items:center}
-#vDash .card3d #atm .stats>div>small{grid-column:1/-1}
-#vDash .card3d #atm .stats>div>.rkcn{grid-column:1;grid-row:2}
-#vDash .card3d #atm .stats>div>b.big{grid-column:2;grid-row:2}
-#vDash .card3d #atm .rkc-wl{display:none}
-.rkcn{display:block;width:56px;height:56px;margin:-4px 0 -4px -4px;overflow:visible;filter:drop-shadow(0 0 7px rgba(255,214,102,.6)) drop-shadow(0 3px 5px rgba(0,0,0,.45));animation:rkcnFl 3.2s ease-in-out infinite}
+#rkKoin .ki{width:60px;height:60px;margin:-4px}
 .rkcn-sw{animation:rkcnSw 4.5s ease-in-out infinite}
 .rkcn-st{transform-box:fill-box;transform-origin:center;opacity:0;animation:rkcnTw 2.6s ease-in-out infinite}
 .rkcn-st.b{animation-delay:.9s}.rkcn-st.c{animation-delay:1.7s}
-@keyframes rkcnFl{50%{transform:translateY(-2px)}}
 @keyframes rkcnSw{0%{transform:translateX(0) skewX(-20deg)}45%,100%{transform:translateX(150px) skewX(-20deg)}}
 @keyframes rkcnTw{0%,100%{opacity:0;transform:scale(.2) rotate(0)}50%{opacity:1;transform:scale(1) rotate(45deg)}}
-.perf-lo .rkcn,.perf-lo .rkcn-sw,.perf-lo .rkcn-st{animation:none}
+.rkkFly .rkcn-sw,.rkkFly .rkcn-st,.perf-lo .rkcn-sw,.perf-lo .rkcn-st{animation:none}
+.rkkFly .rkcn-st{display:none}
 .perf-lo .rkcn-st{opacity:.8}
-@media(prefers-reduced-motion:reduce){.rkcn,.rkcn-sw,.rkcn-st{animation:none}.rkcn-st{opacity:.8}}
+@media(prefers-reduced-motion:reduce){.rkcn-sw,.rkcn-st{animation:none}.rkcn-st{opacity:.8}}
 </style>
-<script>
-(function(){try{
-var d=document.querySelector('#atm .stats>div'),sm=d&&d.querySelector('small');
-if(!d||!sm||d.querySelector('.rkcn'))return;
-var star='M0-7 1.8-1.8 7 0 1.8 1.8 0 7-1.8 1.8-7 0-1.8-1.8Z';
-var h='<svg class="rkcn" viewBox="-10 -10 120 120" aria-hidden="true" focusable="false"><defs>'
-+'<linearGradient id="rkcnG1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFF6C9"/><stop offset=".35" stop-color="#F7CF5C"/><stop offset=".7" stop-color="#C8942B"/><stop offset="1" stop-color="#FFE9A6"/></linearGradient>'
-+'<linearGradient id="rkcnG2" x1="1" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#FFF0B0"/><stop offset=".5" stop-color="#D9A53A"/><stop offset="1" stop-color="#9A6A12"/></linearGradient>'
-+'<radialGradient id="rkcnF" cx=".5" cy=".35" r=".75"><stop offset="0" stop-color="#FFF1F5"/><stop offset=".6" stop-color="#BFD9FF"/><stop offset="1" stop-color="#7FA9F0"/></radialGradient>'
-+'<linearGradient id="rkcnS" x1="0" x2="1" y1="0" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".85"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>'
-+'<clipPath id="rkcnC"><circle cx="50" cy="50" r="38"/></clipPath><clipPath id="rkcnO"><circle cx="50" cy="50" r="49"/></clipPath>'
-+'<path id="rkcnA" d="M9 50A41 41 0 0 1 91 50"/><path id="rkcnB" d="M3 50A47 47 0 0 0 97 50"/></defs>'
-+'<circle cx="50" cy="50" r="49" fill="url(#rkcnG1)"/>'
-+'<circle cx="50" cy="50" r="45.5" fill="none" stroke="#8A5A0A" stroke-opacity=".5" stroke-width="1" stroke-dasharray="1.4 2.2"/>'
-+'<circle cx="50" cy="50" r="39.5" fill="url(#rkcnG2)"/><circle cx="50" cy="50" r="38" fill="url(#rkcnF)"/>'
-+'<g clip-path="url(#rkcnC)"><image href="'+(window.RKG_URL||'')+'" x="13" y="12" width="74" height="124" preserveAspectRatio="xMidYMin slice"/></g>'
-+'<text font-family="Georgia,serif" font-size="9" font-weight="800" letter-spacing="2.2" fill="#5B3A00" stroke="#FFF3B8" stroke-width=".35" paint-order="stroke"><textPath href="#rkcnA" startOffset="50%" text-anchor="middle">RASEL</textPath></text>'
-+'<text font-family="Georgia,serif" font-size="5.5" font-weight="700" letter-spacing="1.6" fill="#5B3A00"><textPath href="#rkcnB" startOffset="50%" text-anchor="middle">COLLECTION</textPath></text>'
-+'<g clip-path="url(#rkcnO)"><rect class="rkcn-sw" x="-40" y="-10" width="28" height="120" fill="url(#rkcnS)"/></g>'
-+'<g transform="translate(97 6)"><path class="rkcn-st" d="'+star+'" fill="#FFF8D6"/></g>'
-+'<g transform="translate(2 24)"><path class="rkcn-st b" d="'+star+'" fill="#FFF8D6"/></g>'
-+'<g transform="translate(90 94)"><path class="rkcn-st c" d="'+star+'" fill="#FFF8D6"/></g></svg>';
-var t=document.createElement('div');t.innerHTML=h;sm.insertAdjacentElement('afterend',t.firstChild);
-}catch(e){}})();
-</script>
 </body>
 </html>
