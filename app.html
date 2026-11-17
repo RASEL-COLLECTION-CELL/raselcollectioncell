@@ -5319,5 +5319,52 @@ setTimeout(next,1200);
 setTimeout(function(){try{new Image().src='https://rasel-collection-cell.github.io/raselcollectioncell/rk-bg.jpg'}catch(e){}},3500);
 }catch(e){}})();
 </script>
+<!-- ===== RKFIX2 v1 (ADD-ONLY, CSS saja, tempel TEPAT SEBELUM </body>): teks terbaca di tab Promo/Event/Riwayat, tidak tumpang tindih, kupu-kupu lebih transparan ===== -->
+<style id="rkfix2-tabs-css">
+/* Promo kosong & catatan: teks terang di atas pill gelap */
+#rkPromo .pmk{color:#f1eaff;background:rgba(20,12,45,.55);border-radius:12px;padding:6px 12px}
+.rkNote{color:#efe8ff;background:rgba(20,12,45,.5);border-radius:12px;padding:6px 12px}
+.foot{color:#e9e1ff;background:rgba(20,12,45,.5);border-radius:12px;padding:6px 12px;text-wrap:balance}
+/* Riwayat event: teks tidak terpotong */
+#evBox .tx small{display:block}
+#evBox .tx b{white-space:normal;overflow:visible;text-overflow:clip}
+#evBox .tx small b{display:inline;font-size:inherit}
+/* LED event: ghost terlihat, bar turun ke baris sendiri */
+.evled-trk .g{visibility:visible;opacity:.28}
+.evled-bar{flex:1 1 100%;order:3}
+/* Kupu-kupu tetap tampil, lebih transparan */
+#bf .bfl{opacity:.5}
+/* Balon kucing tidak menimpa teks */
+#rail .tier .trk{margin-top:26px}
+.wlk .bub{bottom:calc(100% + 2px);padding:5px 10px}
+/* Menu bawah: label tidak berdesakan di HP sempit; titik Event disembunyikan bila sudah dilihat */
+#rkNav button{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media (max-width:360px){#rkNav button{font-size:10.5px;letter-spacing:-.1px}#rkNav svg{width:21px;height:21px}}
+#rkNav button.rkseen .dot{display:none!important}
+</style>
+<script id="rkfix2-tabs-js">
+(function(){try{
+var D=document,v=D.getElementById('vDash'),nav=D.getElementById('rkNav');
+if(!v||!nav)return;
+/* ikon Promo: megafon (beda dari kertas struk Riwayat) */
+function ic(){var p=nav.querySelector('[data-t=promo] svg');if(p&&!p.getAttribute('data-mf')){p.setAttribute('data-mf','1');p.innerHTML='<path d="M3 10v4a1 1 0 0 0 1 1h3l8 4V5L7 9H4a1 1 0 0 0-1 1z"/><path d="M18.5 9a4 4 0 0 1 0 6"/>'}}
+/* titik merah Event: menyala hanya jika isi event berubah sejak terakhir dibuka */
+var K='rkEvSeen';
+function sg(){var e=D.getElementById('evBox');return e&&!e.hidden?String((e.textContent||'').replace(/\s+/g,' ').length)+':'+(e.querySelectorAll('article').length):''}
+function rd(){try{return localStorage.getItem(K)}catch(x){return null}}
+function wr(s){try{localStorage.setItem(K,s)}catch(x){}}
+var mem=null;
+function sync(){
+ ic();
+ var b=nav.querySelector('[data-t=event]');if(!b)return;
+ var s=sg(),seen=mem!==null?mem:rd();
+ if(v.getAttribute('data-rkt')==='event'&&s){mem=s;wr(s);seen=s}
+ b.classList.toggle('rkseen',!s||s===seen);
+}
+sync();
+if(window.MutationObserver)new MutationObserver(sync).observe(v,{attributes:true,attributeFilter:['data-rkt']});
+setInterval(function(){if(!D.hidden)sync()},2000);
+}catch(e){}})();
+</script>
 </body>
 </html>
