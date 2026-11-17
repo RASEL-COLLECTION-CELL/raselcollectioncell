@@ -684,7 +684,7 @@ var RK_ORIGIN_INDUK=location.origin;/* satu-satunya halaman induk yang boleh men
 var $=function(s){return document.querySelector(s)};
 var GS=(typeof google!=='undefined'&&google.script)?google.script.run:null;
 var S={src:'gs',l5:'',pin:'',tok:'',act:0,d:null,hide:false,n:5,tl:false,idle:null,busy:false};
-window.RCC={tok:function(){return S.tok},d:function(){return S.d},src:function(){return S.src},rpc:function(f,a){return sbOn()?sbRpc(f,a):Promise.reject(new Error('sb'))}};
+window.RCC={tok:function(){return S.tok},d:function(){return S.d}};
 
 /* ---- Mode perangkat: hemat untuk HP murah, penuh untuk HP kencang (otomatis) ---- */
 var PERF=(function(){
@@ -4907,13 +4907,10 @@ function draw(){
 function putar(){clearInterval(tm);if(A.length>1)tm=setInterval(function(){if(document.hidden)return;ix++;draw()},6000)}
 function muat(){
  var t=tok();if(!t)return;
- var ok=function(r){
+ google.script.run.withSuccessHandler(function(r){
   if(r&&r.status==='ok'){A=r.iklan||[];ix=0;draw();putar()}
   else if(r&&r.status==='expired'){A=[];box.hidden=true;clearInterval(tm)}
- };
- var viaGS=function(){google.script.run.withSuccessHandler(ok).withFailureHandler(function(){}).iklanPelanggan(t)};
- if(window.RCC&&RCC.src&&RCC.src()==='sb')RCC.rpc('sb_iklan',{p_token:t}).then(function(r){if(r&&(r.status==='ok'||r.status==='expired'))ok(r);else viaGS()},viaGS);   /* jalur Supabase; gagal/origin -> Apps Script */
- else viaGS();
+ }).withFailureHandler(function(){}).iklanPelanggan(t);
 }
 function cek(){
  var on=vd.classList.contains('on');
@@ -5496,9 +5493,6 @@ setInterval(function(){if(!D.hidden)sync()},2000);
 .rkkFly .rkcn-st{display:none}
 .perf-lo .rkcn-st{opacity:.8}
 @media(prefers-reduced-motion:reduce){.rkcn-sw,.rkcn-st{animation:none}.rkcn-st{opacity:.8}}
-</style>
-<style id="rk-bf-fix">/* kupu-kupu yang dicolek harus benar-benar hilang (aturan opacity:.5 sebelumnya menimpa .pop) */
-#bf .bfl.pop,body.rkev #bf .bfl.pop{opacity:0}
 </style>
 </body>
 </html>
