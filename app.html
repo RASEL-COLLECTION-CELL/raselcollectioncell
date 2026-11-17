@@ -5330,7 +5330,14 @@ setTimeout(function(){try{new Image().src='https://rasel-collection-cell.github.
 #evBox .tx b{white-space:normal;overflow:visible;text-overflow:clip}
 #evBox .tx small b{display:inline;font-size:inherit}
 /* LED event: ghost terlihat, bar turun ke baris sendiri */
-.evled-trk .g{visibility:visible;opacity:.28}
+.evled-trk .g{visibility:hidden}
+/* nilai chip tidak berkedip (tetap terbaca); kupu-kupu nyaris tak terlihat di tab Event */
+.evled-chip b{animation:none}
+body:has(#vDash[data-rkt=event]) #bf .bfl{opacity:.16}
+/* Riwayat: nama produk jadi lencana yang jelas */
+#hist .tx .a small{display:flex;flex-wrap:wrap;align-items:center;gap:2px 8px;margin-top:3px}
+#hist .tx .a small .rkpr{display:inline-block;max-width:100%;padding:2px 9px;border-radius:99px;font:800 12px/1.35 var(--f);color:#6b4600;background:linear-gradient(135deg,#FFF1BF,#F6D675);border:1px solid rgba(200,148,43,.55);overflow-wrap:anywhere}
+#hist .tx .a small .rkdt{font-size:11.5px}
 .evled-bar{flex:1 1 100%;order:3}
 /* Kupu-kupu tetap tampil, lebih transparan */
 #bf .bfl{opacity:.5}
@@ -5361,6 +5368,14 @@ function sync(){
  if(v.getAttribute('data-rkt')==='event'&&s){mem=s;wr(s);seen=s}
  b.classList.toggle('rkseen',!s||s===seen);
 }
+/* riwayat: pisahkan "tanggal · produk" agar produk tampil sebagai lencana */
+var H=D.getElementById('hist');
+function pr(){if(!H)return;[].forEach.call(H.querySelectorAll('.tx .a small:not([data-rkpr])'),function(m){
+ m.setAttribute('data-rkpr','1');var t=m.textContent,i=t.lastIndexOf(' \u00b7 ');if(i<0)return;
+ var dt=t.slice(0,i),pd=t.slice(i+3),a=D.createElement('span'),b=D.createElement('span');
+ a.className='rkpr';a.textContent=pd;b.className='rkdt';b.textContent=dt;m.textContent='';m.appendChild(a);m.appendChild(b)})}
+if(H&&window.MutationObserver)new MutationObserver(pr).observe(H,{childList:true});
+pr();
 sync();
 if(window.MutationObserver)new MutationObserver(sync).observe(v,{attributes:true,attributeFilter:['data-rkt']});
 setInterval(function(){if(!D.hidden)sync()},2000);
