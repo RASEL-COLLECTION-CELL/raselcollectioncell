@@ -2679,7 +2679,7 @@ function build(prods,judul){
  P='ea'+(++N)+'_';
  var s=pilih(prods||[],judul),ct=s.ct||(s.cat?cat(s.cat):''),bx=s.bx,by=s.by;
  if(bx==null){bx=s.cat?s.cat.x:68;by=s.cat?Math.max(14,s.cat.y-34):16}
- return '<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="xMidYMid slice" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><defs>'+s.d+'</defs>'+s.b+ct+bub(s.say||'Meong!',bx,by)+'</svg>';
+ return '<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="xMidYMid slice" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><defs>'+s.d+'</defs>'+s.b+ct+bub(s.say||'Hore!',bx,by)+'</svg>';
 }
 window.EVART={build:build};
 
@@ -3055,7 +3055,7 @@ function note(msg,I){
  }
  var el=document.createElement('div');el.id='evnote';
  el.innerHTML='<div class="evn-card">'+(art?'<div class="evn-art"><div class="eva say">'+art+'</div></div>':'')
-  +'<div class="evn-h">'+(syarat?'Sedikit lagi ya! 😺':lim?'Hadiah sudah kamu ambil 🎁':'Info klaim')+'</div>'
+  +'<div class="evn-h">'+(syarat?'Sedikit lagi ya!':lim?'Hadiah sudah kamu ambil 🎁':'Info klaim')+'</div>'
   +'<div class="evn-s">'+(syarat?'Hadiah event belum bisa diklaim, transaksi kamu belum memenuhi syarat.':lim?'Batas klaim kamu untuk event ini sudah tercapai atau kuota hadiah sudah habis. Pantau event berikutnya ya!':esc(msg))+'</div>'
   +(li?'<ul class="evn-l">'+li+'</ul>':'')+pg+'<button class="evn-b" type="button">'+(lim?'Oke, mengerti':'Siap, aku transaksi dulu!')+'</button></div>';
  document.body.appendChild(el);box=el;
@@ -3994,6 +3994,19 @@ else setInterval(function(){if(!D.hidden)rkdSync()},1500);
 .perf-lo .rkp-cat,.perf-lo .rkp-box{animation:none}
 @media(prefers-reduced-motion:reduce){#rkp *{animation:none!important;transition:none!important}}
 </style>
+<style id="rkp-rasel">
+/* Rasel bersembunyi di dalam kotak; muncul saat kotak diketuk */
+.rkp-box{left:25px;top:auto;bottom:0;width:100px;height:100px;z-index:2}
+.rkp-box .lid{transform-box:fill-box;transform-origin:50% 100%;transition:transform .45s cubic-bezier(.3,1.6,.5,1),opacity .45s}
+.rkp-box.x{visibility:visible;animation:none}
+.rkp-box.x .lid{transform:translate(8px,-30px) rotate(24deg);opacity:0}
+.rkp-ring{left:25px;top:68px;width:100px;height:100px}
+.rkp-p{top:104px}
+.rkp-cat{z-index:1;bottom:12px;opacity:0;transform:translateY(90px) scale(.35);transform-origin:50% 100%;animation:none}
+.rkp-cat.sh{opacity:1;transform:none;filter:drop-shadow(0 0 14px rgba(255,214,110,.7));animation:rkpPop .75s cubic-bezier(.22,1,.36,1) both,rkpb .5s ease-in-out .75s infinite alternate}
+@keyframes rkpPop{0%{opacity:0;transform:translateY(90px) scale(.35)}55%{opacity:1;transform:translateY(-16px) scale(1.08)}80%{transform:translateY(3px) scale(.98)}100%{opacity:1;transform:none}}
+.perf-lo .rkp-cat.sh{animation:rkpPop .4s both}
+</style>
 <script>
 (function(){try{
 var D=document,ov=null,busy=false,T=[],sawSpin=false,ready=false,boom=false,leaving=false,mo=null,lt=0,t0=0,lastI=-1,cnt=0;
@@ -4007,7 +4020,7 @@ var LN=[
 ['Sabar ya, Kak 😊','Data lagi dijemput Rasel. Jalannya santai, tapi pasti sampai.'],
 ['Hadiah beneran? Belum, Kak 😅','Yang ini cuma candaan. Yang asli ada di menu Hadiah, ya.']];
 var CAT=RKG(150,118,'rkp-cat');
-var BOX='<svg viewBox="0 0 64 64" aria-hidden="true"><rect x="6" y="28" width="52" height="30" rx="5" fill="#2F6BE8"/><rect x="3" y="20" width="58" height="12" rx="4" fill="#4A8CFF"/><rect x="28" y="20" width="8" height="38" fill="#F2C14E"/><path d="M32 20C22 4 8 8 14 16c4 5 14 4 18 4zM32 20C42 4 56 8 50 16c-4 5-14 4-18 4z" fill="#FFD76E"/><circle cx="32" cy="19" r="4" fill="#C8942B"/></svg>';
+var BOX='<svg viewBox="0 0 64 64" aria-hidden="true"><rect x="6" y="28" width="52" height="30" rx="5" fill="#2F6BE8"/><rect x="28" y="28" width="8" height="30" fill="#F2C14E"/><g class="lid"><rect x="3" y="20" width="58" height="12" rx="4" fill="#4A8CFF"/><rect x="28" y="20" width="8" height="12" fill="#F2C14E"/><path d="M32 20C22 4 8 8 14 16c4 5 14 4 18 4zM32 20C42 4 56 8 50 16c-4 5-14 4-18 4z" fill="#FFD76E"/><circle cx="32" cy="19" r="4" fill="#C8942B"/></g></svg>';
 var COL=['#F2C14E','#FFE08A','#4A8CFF','#fff','#C8942B'];
 function $(s){return ov?ov.querySelector(s):null}
 function tm(f,ms){var t=setTimeout(f,ms);T.push(t);return t}
@@ -4026,7 +4039,7 @@ function leave(){
 function setReady(){
  if(ready||!ov)return;ready=true;st('✔ Data asli sudah kembali');
  if(!boom&&!leaving){
-  say('Yah, nggak ditekan… kotaknya kubawa pulang ya 😹');
+  say('Yah, nggak ditekan… kotaknya kubawa pulang ya');
   lt=tm(leave,Math.max(3200,t0+4800-Date.now()));
  }
 }
@@ -4046,12 +4059,12 @@ function blast(){
   }
   tm(function(){try{var q=ov.querySelectorAll('.rkp-p'),j;for(j=0;j<q.length;j++)q[j].remove()}catch(e){}},1000);
   if(h){h.classList.remove('on');h.classList.add('h')}
-  say('Duarrr! 💥');
+  say('Taraa! Rasel muncul dari kotak!');
   var n2=count(),k=0,L;
   if(n2===1)k=0;else{do{k=Math.floor(Math.random()*LN.length)}while(k===lastI&&LN.length>1)}
   lastI=k;L=LN[k];
   $('.rkp-h').textContent=L[0];$('.rkp-s').textContent=L[1];
-  $('.rkp-n').textContent='Ketipu ke-'+n2+' hari ini 😹 Cuma bercanda ya, hadiah asli tetap ada di menu Hadiah.';
+  $('.rkp-n').textContent='Ketipu ke-'+n2+' hari ini. Cuma bercanda ya, hadiah asli tetap ada di menu Hadiah.';
   $('.rkp-card').classList.add('on');
  },rd()?0:380);
 }
@@ -4063,7 +4076,7 @@ function start(){
   +'<div class="rkp-card" role="dialog" aria-live="polite"><div class="rkp-tg">Kejutan</div><h3 class="rkp-h"></h3><div class="rkp-ln"></div><div class="rkp-s"></div><div class="rkp-n"></div><button class="rkp-ok" type="button">Oke, aku ngaku 😅</button></div>'
   +'<div class="rkp-st" aria-live="polite"></div><button class="rkp-sk" type="button">Lewati</button>';
  D.body.appendChild(ov);void ov.offsetWidth;ov.classList.add('on','in');
- say('Eits, mau refresh? Hadiahnya kubawa dulu ya 😼');st('Data asli lagi dijemput…');
+ say('Ada kejutan di dalam kotak ini. Coba ketuk!');st('Data asli lagi dijemput…');
  tm(function(){var h=$('.rkp-hint');if(h&&!boom)h.classList.add('on')},rd()?100:1100);
  var b=D.getElementById('bRef');
  if(b&&window.MutationObserver){
@@ -5467,6 +5480,48 @@ pr();
 sync();
 if(window.MutationObserver)new MutationObserver(sync).observe(v,{attributes:true,attributeFilter:['data-rkt']});
 setInterval(function(){if(!D.hidden)sync()},2000);
+}catch(e){}})();
+</script>
+<style id="rk-coin">
+#vDash .card3d #atm .stats>div{display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:6px;align-items:center}
+#vDash .card3d #atm .stats>div>small{grid-column:1/-1}
+#vDash .card3d #atm .stats>div>.rkcn{grid-column:1;grid-row:2}
+#vDash .card3d #atm .stats>div>b.big{grid-column:2;grid-row:2}
+#vDash .card3d #atm .rkc-wl{display:none}
+.rkcn{display:block;width:56px;height:56px;margin:-4px 0 -4px -4px;overflow:visible;filter:drop-shadow(0 0 7px rgba(255,214,102,.6)) drop-shadow(0 3px 5px rgba(0,0,0,.45));animation:rkcnFl 3.2s ease-in-out infinite}
+.rkcn-sw{animation:rkcnSw 4.5s ease-in-out infinite}
+.rkcn-st{transform-box:fill-box;transform-origin:center;opacity:0;animation:rkcnTw 2.6s ease-in-out infinite}
+.rkcn-st.b{animation-delay:.9s}.rkcn-st.c{animation-delay:1.7s}
+@keyframes rkcnFl{50%{transform:translateY(-2px)}}
+@keyframes rkcnSw{0%{transform:translateX(0) skewX(-20deg)}45%,100%{transform:translateX(150px) skewX(-20deg)}}
+@keyframes rkcnTw{0%,100%{opacity:0;transform:scale(.2) rotate(0)}50%{opacity:1;transform:scale(1) rotate(45deg)}}
+.perf-lo .rkcn,.perf-lo .rkcn-sw,.perf-lo .rkcn-st{animation:none}
+.perf-lo .rkcn-st{opacity:.8}
+@media(prefers-reduced-motion:reduce){.rkcn,.rkcn-sw,.rkcn-st{animation:none}.rkcn-st{opacity:.8}}
+</style>
+<script>
+(function(){try{
+var d=document.querySelector('#atm .stats>div'),sm=d&&d.querySelector('small');
+if(!d||!sm||d.querySelector('.rkcn'))return;
+var star='M0-7 1.8-1.8 7 0 1.8 1.8 0 7-1.8 1.8-7 0-1.8-1.8Z';
+var h='<svg class="rkcn" viewBox="-10 -10 120 120" aria-hidden="true" focusable="false"><defs>'
++'<linearGradient id="rkcnG1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFF6C9"/><stop offset=".35" stop-color="#F7CF5C"/><stop offset=".7" stop-color="#C8942B"/><stop offset="1" stop-color="#FFE9A6"/></linearGradient>'
++'<linearGradient id="rkcnG2" x1="1" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#FFF0B0"/><stop offset=".5" stop-color="#D9A53A"/><stop offset="1" stop-color="#9A6A12"/></linearGradient>'
++'<radialGradient id="rkcnF" cx=".5" cy=".35" r=".75"><stop offset="0" stop-color="#FFF1F5"/><stop offset=".6" stop-color="#BFD9FF"/><stop offset="1" stop-color="#7FA9F0"/></radialGradient>'
++'<linearGradient id="rkcnS" x1="0" x2="1" y1="0" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".85"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>'
++'<clipPath id="rkcnC"><circle cx="50" cy="50" r="38"/></clipPath><clipPath id="rkcnO"><circle cx="50" cy="50" r="49"/></clipPath>'
++'<path id="rkcnA" d="M9 50A41 41 0 0 1 91 50"/><path id="rkcnB" d="M3 50A47 47 0 0 0 97 50"/></defs>'
++'<circle cx="50" cy="50" r="49" fill="url(#rkcnG1)"/>'
++'<circle cx="50" cy="50" r="45.5" fill="none" stroke="#8A5A0A" stroke-opacity=".5" stroke-width="1" stroke-dasharray="1.4 2.2"/>'
++'<circle cx="50" cy="50" r="39.5" fill="url(#rkcnG2)"/><circle cx="50" cy="50" r="38" fill="url(#rkcnF)"/>'
++'<g clip-path="url(#rkcnC)"><image href="'+(window.RKG_URL||'')+'" x="13" y="12" width="74" height="124" preserveAspectRatio="xMidYMin slice"/></g>'
++'<text font-family="Georgia,serif" font-size="9" font-weight="800" letter-spacing="2.2" fill="#5B3A00" stroke="#FFF3B8" stroke-width=".35" paint-order="stroke"><textPath href="#rkcnA" startOffset="50%" text-anchor="middle">RASEL</textPath></text>'
++'<text font-family="Georgia,serif" font-size="5.5" font-weight="700" letter-spacing="1.6" fill="#5B3A00"><textPath href="#rkcnB" startOffset="50%" text-anchor="middle">COLLECTION</textPath></text>'
++'<g clip-path="url(#rkcnO)"><rect class="rkcn-sw" x="-40" y="-10" width="28" height="120" fill="url(#rkcnS)"/></g>'
++'<g transform="translate(97 6)"><path class="rkcn-st" d="'+star+'" fill="#FFF8D6"/></g>'
++'<g transform="translate(2 24)"><path class="rkcn-st b" d="'+star+'" fill="#FFF8D6"/></g>'
++'<g transform="translate(90 94)"><path class="rkcn-st c" d="'+star+'" fill="#FFF8D6"/></g></svg>';
+var t=document.createElement('div');t.innerHTML=h;sm.insertAdjacentElement('afterend',t.firstChild);
 }catch(e){}})();
 </script>
 </body>
