@@ -3,7 +3,7 @@
 <head>
 <meta name="robots" content="noindex, nofollow">
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#0F2A5F">
 <title>RASEL COLLECTION CELL</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -5345,6 +5345,11 @@ body:has(#vDash[data-rkt=event]) #bf .bfl{opacity:.16}
 #rail .tier .trk{margin-top:26px}
 .wlk .bub{bottom:calc(100% + 2px);padding:5px 10px}
 /* Menu bawah: label tidak berdesakan di HP sempit; titik Event disembunyikan bila sudah dilihat */
+/* Zoom dikunci di semua mode (HP, desktop, layar lebar): cubit-zoom dimatikan, scroll tetap jalan */
+html,body{touch-action:pan-x pan-y}
+/* Mode desktop / layar lebar: bingkai lebih lebar & menu bawah ikut, tidak jadi kolom sempit */
+@media (min-width:700px){.app{max-width:640px}#rkNav{max-width:600px}#rkNav button{font-size:13px}#rkNav svg{width:25px;height:25px}}
+@media (min-width:1000px){.app{max-width:720px}#rkNav{max-width:660px}}
 #rkNav button{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 @media (max-width:360px){#rkNav button{font-size:10.5px;letter-spacing:-.1px}#rkNav svg{width:21px;height:21px}}
 #rkNav button.rkseen .dot{display:none!important}
@@ -5353,6 +5358,8 @@ body:has(#vDash[data-rkt=event]) #bf .bfl{opacity:.16}
 (function(){try{
 var D=document,v=D.getElementById('vDash'),nav=D.getElementById('rkNav');
 if(!v||!nav)return;
+/* iOS Safari mengabaikan user-scalable: blok gestur zoom */
+['gesturestart','gesturechange','gestureend'].forEach(function(n){D.addEventListener(n,function(e){e.preventDefault()},{passive:false})});
 /* ikon Promo: megafon (beda dari kertas struk Riwayat) */
 function ic(){var p=nav.querySelector('[data-t=promo] svg');if(p&&!p.getAttribute('data-mf')){p.setAttribute('data-mf','1');p.innerHTML='<path d="M3 10v4a1 1 0 0 0 1 1h3l8 4V5L7 9H4a1 1 0 0 0-1 1z"/><path d="M18.5 9a4 4 0 0 1 0 6"/>'}}
 /* titik merah Event: menyala hanya jika isi event berubah sejak terakhir dibuka */
